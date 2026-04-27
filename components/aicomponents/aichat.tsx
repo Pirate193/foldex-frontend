@@ -56,7 +56,7 @@ import { CreateFolder, CreateNote, GenerateCodeSnippet, GenerateMermaidDiagram, 
 import { Tool, ToolContent, ToolHeader } from "../ai-elements/tool";
 import { Spinner } from "../ui/spinner";
 
-const AI_CHAT_URL = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000"}/api/ai/chat`;
+const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space/api" : "http://localhost:3000/api"}/ai/chat`;
 
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();

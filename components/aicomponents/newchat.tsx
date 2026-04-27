@@ -41,7 +41,7 @@ import { useCreateChat } from "@/hooks/use-chat";
 import { useRouter } from "next/navigation";
 import { useAiStore } from "@/stores/aistore";
 
-const AI_CHAT_URL = `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000"}/api/ai/chat`;
+const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000"}/api/ai/chat`;
 
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();

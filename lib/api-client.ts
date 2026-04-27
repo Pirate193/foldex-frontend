@@ -2,7 +2,7 @@ import axios from "axios";
 import { redirect } from "next/navigation";
 
 const apiClient = axios.create({
-    baseURL:"https://api.pslmp.foldex.space",
+    baseURL:process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000",
     withCredentials:true,
     headers:{
         "Content-Type":"application/json"
