@@ -14,6 +14,10 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
+import { isDesktopApp } from "@/lib/isdesktop";
+import { getLocalDb } from "@/lib/localdb";
+import { eq } from "drizzle-orm";
+import { syncLocalToCloud } from "@/lib/services/sync";
 
 
 type Step = "email" | "otp";
@@ -31,6 +35,16 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
+
+  // Helper: Save user info locally after successful auth (for desktop)
+  async function saveUserLocally(user: { id: string; name: string; email: string; image?: string | null }) {
+    // Always persist userId to localStorage so getUserId() works everywhere
+    localStorage.setItem("pslmp_user_id", user.id);
+
+    if (isDesktopApp()) {
+      await syncLocalToCloud(user);
+    }
+  }
 
   // Step 1 — Send OTP to email
   async function handleSendOtp(e: React.FormEvent) {
@@ -58,7 +72,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
     setError("");
     setLoading(true);
 
-    const { error } = await authClient.signIn.emailOtp({
+    const { data, error } = await authClient.signIn.emailOtp({
       email,
       otp: value,
     });
@@ -69,8 +83,10 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
       console.log(error);
       setError("Invalid or expired code. Please try again.");
       setOtp(""); // clear so user can re-enter
-    } else {
+    } else if (data?.user) {
       console.log("OTP verified successfully")
+      // Save user to local DB and localStorage
+      await saveUserLocally(data.user);
       router.push("/home");
     }
   }
@@ -106,7 +122,18 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6 relative", className)} {...props}>
+      {isDesktopApp() && (
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="absolute -top-12 left-0" 
+          onClick={() => router.push("/home")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to App
+        </Button>
+      )}
       {/* Header */}
       <div className="flex flex-col items-center gap-1 text-center">
         {step === "otp" ? (

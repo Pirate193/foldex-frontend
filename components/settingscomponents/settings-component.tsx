@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
-import { Settings, Key, MessageSquare, Eye, EyeOff, Check, X, Loader2, Trash2, RotateCcw, GlobeIcon, User, Palette, Menu } from "lucide-react";
+import { Settings, Key, MessageSquare, Eye, EyeOff, Check, X, Loader2, Trash2, RotateCcw, GlobeIcon, User, Palette, Menu, LogIn } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
@@ -15,12 +15,15 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Kbd } from "../ui/kbd";
+import { isDesktopApp } from "@/lib/isdesktop";
+import { useRouter } from "next/navigation";
 
 // ─── Account Section ───
 function AccountSection() {
   const { data: session, isPending } = useSession();
   const [name, setName] = useState(session?.user?.name || "");
   const [isUpdating, setIsUpdating] = useState(false);
+  const router = useRouter();
 
   // Update local state when session loads
   useEffect(() => {
@@ -44,11 +47,37 @@ function AccountSection() {
     }
   };
 
-  if (isPending) {
+  if (isPending && !isDesktopApp()) {
     return <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
-  if (!session?.user) return null;
+  // Guest mode — show sign-in CTA
+  if (!session?.user) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium">Account</h3>
+          <p className="text-sm text-muted-foreground">Sign in to sync your data across devices and access cloud features.</p>
+        </div>
+        <Separator />
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <User className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <div className="text-center space-y-1">
+            <h4 className="text-sm font-medium">You&apos;re using pslmp as a guest</h4>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Your data is stored locally on this device. Sign in to enable cloud sync and access your notes from anywhere.
+            </p>
+          </div>
+          <Button onClick={() => router.push("/sign-in")} className="cursor-pointer gap-2">
+            <LogIn className="h-4 w-4" />
+            Sign in or Create Account
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const user = session.user;
   const initials = user.name ? user.name.substring(0, 2).toUpperCase() : "U";

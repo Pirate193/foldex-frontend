@@ -4,6 +4,16 @@ import type { NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Desktop app (Tauri) loads from static files — the middleware runs on the
+  // Next.js dev server during development. We detect desktop via a custom header
+  // or by checking if the request comes from Tauri's webview.
+  // In production static export, this middleware won't run at all.
+  // During dev, we let everything through if the User-Agent contains "Tauri".
+  const userAgent = request.headers.get("user-agent") || "";
+  if (userAgent.includes("Tauri")) {
+    return NextResponse.next();
+  }
+
   const isAuthRoute = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
   const isPublicRoute = pathname === "/" || pathname === "/pricing" || pathname === "/about" || pathname.startsWith("/api");
 

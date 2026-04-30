@@ -3,8 +3,10 @@
 import {
   Bell,
   ChevronsUpDown,
+  LogIn,
   LogOut,
   Loader2,
+  User as UserIcon,
 } from "lucide-react"
 
 import {
@@ -29,18 +31,66 @@ import {
 } from "@/components/ui/sidebar"
 import { useSession, signOut } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
+import { isDesktopApp } from "@/lib/isdesktop"
+import { useEffect, useState } from "react"
+import { getLocalDb } from "@/lib/localdb"
+import { localUser } from "@/lib/schema.local"
+import { eq } from "drizzle-orm"
+
+type LocalUserInfo = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const { data: session, isPending } = useSession()
   const router = useRouter()
 
+  // Web: use better-auth session
+  const { data: session, isPending: sessionPending } = useSession()
+
+  // Desktop: load local user from SQLite
+  const [localUserInfo, setLocalUserInfo] = useState<LocalUserInfo | null>(null)
+  const [localLoading, setLocalLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isDesktopApp()) {
+      setLocalLoading(false)
+      return
+    }
+    // Load user from local_user table
+    const loadLocalUser = async () => {
+      try {
+        const db = await getLocalDb()
+        const [user] = await db.select().from(localUser).where(eq(localUser.isLoggedIn, true))
+        if (user) {
+          setLocalUserInfo(user)
+        }
+      } catch (e) {
+        console.error("Failed to load local user:", e)
+      } finally {
+        setLocalLoading(false)
+      }
+    }
+    loadLocalUser()
+  }, [])
+
   const handleLogout = async () => {
+    if (isDesktopApp()) {
+      const { markLocalUserLoggedOut } = await import("@/lib/services/sync")
+      await markLocalUserLoggedOut()
+      setLocalUserInfo(null)
+    }
     await signOut()
     router.push("/")
   }
 
-  if (isPending) {
+  // Determine if loading
+  const isLoading = isDesktopApp() ? localLoading : sessionPending
+
+  if (isLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -52,11 +102,35 @@ export function NavUser() {
     )
   }
 
-  if (!session?.user) {
-    return null
+  // Determine the user data source
+  const user = isDesktopApp()
+    ? localUserInfo
+    : session?.user ?? null
+
+  // Guest mode — show "Sign In" button
+  if (!user) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            size="lg"
+            className="md:h-8 md:p-0 cursor-pointer"
+            onClick={() => router.push("/sign-in")}
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+              <UserIcon className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">Guest</span>
+              <span className="truncate text-xs text-muted-foreground">Sign in to sync</span>
+            </div>
+            <LogIn className="ml-auto size-4 text-muted-foreground" />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
   }
 
-  const user = session.user
   const initials = user.name ? user.name.substring(0, 2).toUpperCase() : "U"
   const avatarUrl = user.image || `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(user.name || user.email)}&radius=10`
 
