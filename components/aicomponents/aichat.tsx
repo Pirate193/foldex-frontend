@@ -31,7 +31,7 @@ import {
 import { CopyIcon, GlobeIcon, RefreshCcwIcon } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, UIMessage } from "ai";
+import { convertToModelMessages, DefaultChatTransport, streamText, UIMessage } from "ai";
 import {
   Conversation,
   ConversationContent,
@@ -55,8 +55,10 @@ import { ChatHistoryPopover } from "./chathistorypopover";
 import { CreateFolder, CreateNote, GenerateCodeSnippet, GenerateMermaidDiagram, GetFolderItems, LoadingCodeSnippet, LoadingFolder, LoadingMermaidDiagram, LoadingNote, SourceGrid, UpdateFolder, UpdateNote, YouTubeEmbed } from "./toolui";
 import { Tool, ToolContent, ToolHeader } from "../ai-elements/tool";
 import { Spinner } from "../ui/spinner";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { google } from "@ai-sdk/google";
 
-const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space/api" : "http://localhost:3000/api"}/ai/chat`;
+const AI_CHAT_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}/api/ai/chat`;
 
 const PromptInputAttachmentsDisplay = () => {
   const attachments = usePromptInputAttachments();
@@ -100,6 +102,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
   const hasTavilyKey = configuredProviders.includes("tavily");
   const [model, setModel] = useState<string>("");
   const selectedModel = model || (availableModels.length > 0 ? availableModels[0].model.id : "");
+  const isOnline = useOnlineStatus();
 
   const pendingMessageProcessedRef = useRef(false);
   const [hasProcessedPendingMessage, setHasProcessedPendingMessage] =
@@ -112,8 +115,20 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
 
   const { messages, status, sendMessage,setMessages,regenerate } = useChat({
     transport: new DefaultChatTransport({
-      api: AI_CHAT_URL,
+      api: "/api/dummy-local-route", 
       credentials: "include",
+      fetch:async(url,options)=>{
+        const requestBody = JSON.parse(options?.body as string);
+      const { messages: chatMessages } = requestBody;
+
+      const result =  streamText({
+        model: google("gemini-3-pro-preview"),
+        messages: await convertToModelMessages(chatMessages),
+        system:"Act as a helpful assistant...",
+      })
+
+      return result.toUIMessageStreamResponse();
+      }
     }),
     id: chatId,
     onFinish: async (message) => {
@@ -162,6 +177,10 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
     if (!(hasText || hasAttachments)) return;
     if (!selectedModel) {
       toast.error("No AI model available. Add an API key in Settings → API Keys.");
+      return;
+    }
+    if (!isOnline) {
+      toast.error("You're offline. AI features require an internet connection.");
       return;
     }
 
@@ -509,7 +528,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text && !status) || !selectedModel} status={status} />
+            <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
       </div>

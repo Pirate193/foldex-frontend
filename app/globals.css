@@ -6,6 +6,10 @@
 @source "../node_modules/streamdown/dist/*.js";
 @custom-variant dark (&:is(.dark *));
 
+html, body {
+  overflow: hidden; /* Prevents the entire app from ever bouncing or scrolling */
+}
+
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);

@@ -22,8 +22,6 @@ import {
   Sparkles,
   HelpCircle,
 } from "lucide-react";
-import { generateQuizzesAction } from "@/actions/generatequiz";
-import { gradeFlashcardAnswer } from "@/actions/grade";
 import {
   Select,
   SelectContent,
@@ -83,19 +81,19 @@ export const QuizBlock = createReactBlockSpec(
             .join("\n");
 
           const count = parseInt(numQuestions);
-          const data = await generateQuizzesAction(
-            topicInput,
-            count,
-            noteContent
-          );
+          // const data = await generateQuizzesAction(
+          //   topicInput,
+          //   count,
+          //   noteContent
+          // );
 
-          props.editor.updateBlock(props.block, {
-            props: {
-              topic: topicInput,
-              quizzesData: JSON.stringify(data),
-              isGeneratingInitial: false,
-            },
-          });
+          // props.editor.updateBlock(props.block, {
+          //   props: {
+          //     topic: topicInput,
+          //     quizzesData: JSON.stringify(data),
+          //     isGeneratingInitial: false,
+          //   },
+          // });
           setIsOpen(false);
         } catch (e) {
           console.error("Failed to generate quizzes:", e);
@@ -305,13 +303,13 @@ const QuizCard = ({
     setStatus("grading");
     try {
       // Call the Server Action
-      const result = await gradeFlashcardAnswer(
-        frqAnswer,
-        quizData.correctAnswers[0],
-        quizData.question
-      );
-      setAiFeedback(result);
-      setStatus(result.isCorrect ? "correct" : "incorrect");
+      // const result = await gradeFlashcardAnswer(
+      //   frqAnswer,
+      //   quizData.correctAnswers[0],
+      //   quizData.question
+      // );
+      // setAiFeedback(result);
+      // setStatus(result.isCorrect ? "correct" : "incorrect");
     } catch (e) {
       console.error(e);
       setStatus("idle"); // Reset on error

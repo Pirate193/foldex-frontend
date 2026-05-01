@@ -7,7 +7,9 @@ import { toast } from 'sonner';
 
 
 /**
- * Build the URL for a given tab type + IDs
+ * Build the URL for a given tab type + IDs.
+ * Uses search params instead of dynamic route segments
+ * for compatibility with Next.js static export.
  */
 function buildTabUrl(
   type: TabType,
@@ -16,24 +18,57 @@ function buildTabUrl(
 ): string {
 
   switch (type) {
-    case 'note':
-      return folderId
-        ? `/folders/${folderId}/note/${itemId}`
-        : `/note/${itemId}`;
+    case 'note': {
+      const params = new URLSearchParams({ id: itemId });
+      if (folderId) params.set('folderId', folderId);
+      return `/note?${params.toString()}`;
+    }
     default:
       return '/';
   }
 }
 
 /**
- * Parse a URL path into tab info, returns null if not a tab-compatible route
+ * Parse a URL (pathname + search) into tab info.
+ * Returns null if not a tab-compatible route.
+ * 
+ * Accepts either:
+ * - Just a pathname (for backward compat) 
+ * - A full URL with search params (primary usage)
  */
-export function parseTabFromUrl(pathname: string): {
+export function parseTabFromUrl(pathnameOrUrl: string): {
   type: TabType;
   itemId: string;
   folderId?: string;
 } | null {
-  
+
+  // Parse the URL to extract pathname and search params
+  let pathname: string;
+  let searchParams: URLSearchParams;
+
+  try {
+    // Handle full URLs and relative paths
+    const url = new URL(pathnameOrUrl, 'http://localhost');
+    pathname = url.pathname;
+    searchParams = url.searchParams;
+  } catch {
+    pathname = pathnameOrUrl;
+    searchParams = new URLSearchParams();
+  }
+
+  // New format: /note?id=xxx&folderId=yyy
+  if (pathname === '/note') {
+    const id = searchParams.get('id');
+    if (id) {
+      return {
+        type: 'note',
+        itemId: id,
+        folderId: searchParams.get('folderId') || undefined,
+      };
+    }
+  }
+
+  // Legacy format support: /folders/xxx/note/yyy (for old persisted tabs)
   const noteMatch = pathname.match(
     /^\/folders\/([^/]+)\/note\/([^/]+)/,
   );
@@ -45,6 +80,7 @@ export function parseTabFromUrl(pathname: string): {
     };
   }
 
+  // Legacy format: /note/xxx
   const looseNoteMatch = pathname.match(/^\/note\/([^/]+)/);
   if (looseNoteMatch) {
     return {

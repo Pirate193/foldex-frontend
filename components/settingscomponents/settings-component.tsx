@@ -21,13 +21,44 @@ import { useRouter } from "next/navigation";
 // ─── Account Section ───
 function AccountSection() {
   const { data: session, isPending } = useSession();
-  const [name, setName] = useState(session?.user?.name || "");
+  const [name, setName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const router = useRouter();
 
-  // Update local state when session loads
+  // Desktop: load user from local SQLite
+  const [localUserInfo, setLocalUserInfo] = useState<{
+    id: string; name: string; email: string; image: string | null;
+  } | null>(null);
+  const [localLoading, setLocalLoading] = useState(true);
+
   useEffect(() => {
-    if (session?.user && !name && !isPending && !isUpdating) {
+    if (!isDesktopApp()) {
+      setLocalLoading(false);
+      return;
+    }
+    const loadLocalUser = async () => {
+      try {
+        const { getLocalDb } = await import("@/lib/localdb");
+        const { localUser } = await import("@/lib/schema.local");
+        const { eq } = await import("drizzle-orm");
+        const db = await getLocalDb();
+        const [user] = await db.select().from(localUser).where(eq(localUser.isLoggedIn, true));
+        if (user) {
+          setLocalUserInfo(user);
+          setName(user.name);
+        }
+      } catch (e) {
+        console.error("Failed to load local user for settings:", e);
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+    loadLocalUser();
+  }, []);
+
+  // Update local state when web session loads
+  useEffect(() => {
+    if (!isDesktopApp() && session?.user && !name && !isPending && !isUpdating) {
       setName(session.user.name || "");
     }
   }, [session, name, isPending, isUpdating]);
@@ -47,12 +78,18 @@ function AccountSection() {
     }
   };
 
-  if (isPending && !isDesktopApp()) {
+  // Determine loading state
+  const isLoading = isDesktopApp() ? localLoading : isPending;
+
+  if (isLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
+  // Determine user from either source
+  const user = isDesktopApp() ? localUserInfo : session?.user ?? null;
+
   // Guest mode — show sign-in CTA
-  if (!session?.user) {
+  if (!user) {
     return (
       <div className="space-y-6">
         <div>
@@ -79,7 +116,6 @@ function AccountSection() {
     );
   }
 
-  const user = session.user;
   const initials = user.name ? user.name.substring(0, 2).toUpperCase() : "U";
   const avatarUrl = user.image || `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(user.name || user.email)}&radius=10`;
 

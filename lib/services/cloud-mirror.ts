@@ -21,9 +21,10 @@ import { folderapi, notesapi, chatapi, templateapi } from "../api";
 
 // ─── Helpers ────────────────────────────────────────────────────
 
-/** Check if user is logged in on desktop */
-function isLoggedIn(): boolean {
+/** Check if user is logged in on desktop AND online */
+function shouldMirror(): boolean {
     if (typeof window === "undefined") return false;
+    if (!navigator.onLine) return false;  // Skip if offline
     return !!localStorage.getItem("pslmp_user_id");
 }
 
@@ -78,7 +79,7 @@ export async function mirrorCreateFolder(localId: string, data: {
     isPinned?: boolean;
     color?: string;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         // Remap parentId if it exists
         let cloudParentId: string | undefined = undefined;
@@ -103,7 +104,7 @@ export async function mirrorUpdateFolder(localId: string, data: {
     isPinned?: boolean;
     color?: string;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "folders");
         if (!cloudId) return; // Never been synced, will be caught on next full sync
@@ -125,7 +126,7 @@ export async function mirrorUpdateFolder(localId: string, data: {
 }
 
 export async function mirrorDeleteFolder(localId: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "folders");
         if (!cloudId) return;
@@ -145,7 +146,7 @@ export async function mirrorCreateNote(localId: string, data: {
     folderId?: string;
     isPinned?: boolean;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         let cloudFolderId: string | undefined = undefined;
         if (data.folderId) {
@@ -169,7 +170,7 @@ export async function mirrorUpdateNote(localId: string, data: {
     folderId?: string | null;
     isPinned?: boolean;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "notes");
         if (!cloudId) return;
@@ -191,7 +192,7 @@ export async function mirrorUpdateNote(localId: string, data: {
 }
 
 export async function mirrorDeleteNote(localId: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "notes");
         if (!cloudId) return;
@@ -204,7 +205,7 @@ export async function mirrorDeleteNote(localId: string) {
 }
 
 export async function mirrorMoveNote(localId: string, folderId: string | null) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "notes");
         if (!cloudId) return;
@@ -223,7 +224,7 @@ export async function mirrorMoveNote(localId: string, folderId: string | null) {
 // ─── Chats ──────────────────────────────────────────────────────
 
 export async function mirrorCreateChat(localId: string, title: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudChat = await chatapi.create({ title });
         await recordSync(localId, cloudChat.id, "chats");
@@ -233,7 +234,7 @@ export async function mirrorCreateChat(localId: string, title: string) {
 }
 
 export async function mirrorUpdateChat(localId: string, title: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "chats");
         if (!cloudId) return;
@@ -244,7 +245,7 @@ export async function mirrorUpdateChat(localId: string, title: string) {
 }
 
 export async function mirrorDeleteChat(localId: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "chats");
         if (!cloudId) return;
@@ -260,7 +261,7 @@ export async function mirrorAddMessage(localChatId: string, localMsgId: string, 
     content: string;
     parts: any;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudChatId = await getCloudId(localChatId, "chats");
         if (!cloudChatId) return;
@@ -280,7 +281,7 @@ export async function mirrorCreateTemplate(localId: string, data: {
     schemapayload: any;
     isPublic?: boolean;
 }) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudTmpl = await templateapi.create(data);
         await recordSync(localId, cloudTmpl.id, "templates");
@@ -295,7 +296,7 @@ export async function mirrorUpdateTemplate(localId: string, data: Partial<{
     schemapayload: any;
     isPublic: boolean;
 }>) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "templates");
         if (!cloudId) return;
@@ -306,7 +307,7 @@ export async function mirrorUpdateTemplate(localId: string, data: Partial<{
 }
 
 export async function mirrorDeleteTemplate(localId: string) {
-    if (!isLoggedIn()) return;
+    if (!shouldMirror()) return;
     try {
         const cloudId = await getCloudId(localId, "templates");
         if (!cloudId) return;

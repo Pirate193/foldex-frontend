@@ -11,9 +11,13 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
+            networkMode:"always",
             staleTime: 1000 * 60,      // data stays fresh for 1 minute
             retry: 1,                   // only retry once on failure
           },
+          mutations:{
+            networkMode:"always"
+          }
         },
       })
   );

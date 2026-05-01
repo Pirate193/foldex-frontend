@@ -84,6 +84,10 @@ export function NavUser() {
       setLocalUserInfo(null)
     }
     await signOut()
+    if(isDesktopApp()){
+      router.push("/home")
+      return
+    }
     router.push("/")
   }
 

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Popover,
   PopoverContent,
@@ -52,8 +52,8 @@ import { Chat } from '@/lib/api-types';
 export function ChatHistoryPopover() {
   const {data:chats} = useChats();
   const router = useRouter();
-  const params = useParams();
-  const chatId = params.chatId;
+  const searchParams = useSearchParams();
+  const chatId = searchParams.get('id');
 
     // Mutations
     const {mutateAsync:deleteChat} = useDeleteChat();
@@ -146,7 +146,7 @@ export function ChatHistoryPopover() {
                       <Button
                         variant="ghost"
                         className="flex-1 justify-start gap-2 font-normal truncate cursor-pointer"
-                        onClick={() => router.push(`/chat/${chat.id}`)}
+                        onClick={() => router.push(`/chat?id=${chat.id}`)}
                       >
                         <MessageSquare className="h-4 w-4" />
                         <span className="truncate">{chat.title}</span>

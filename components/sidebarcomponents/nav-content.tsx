@@ -13,6 +13,7 @@ import { Folder as FolderType, NoteListItem } from "@/lib/api-types"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
 import { Button } from "../ui/button"
 import { FOLDER_COLORS } from "@/lib/foldercolor"
+import { useSession } from "@/hooks/use-auth"
 
 type SortOption = "A-Z" | "Z-A" | "Newest" | "Oldest";
 
@@ -21,7 +22,7 @@ export const NavContent = () => {
     const { mutateAsync: createFolder } = useCreateFolder();
     const { data: allFolders = [], isLoading: isLoadingFolders } = useFolders();
     const { data: allNotes = [], isLoading: isLoadingNotes } = useNotes();
-
+    const {data:session}=useSession();
     const [sortOption, setSortOption] = useState<SortOption>("A-Z");
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -90,7 +91,7 @@ export const NavContent = () => {
             <SidebarHeader className="gap-3.5 border-b p-4">
                 <div className="flex w-full items-center justify-between">
                     <div className="text-base font-medium text-foreground">
-                        
+                        Hi,{session?.user.name || "User"}
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>

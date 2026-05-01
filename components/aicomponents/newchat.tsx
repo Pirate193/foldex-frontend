@@ -40,6 +40,7 @@ import { ChatHistoryPopover } from "./chathistorypopover";
 import { useCreateChat } from "@/hooks/use-chat";
 import { useRouter } from "next/navigation";
 import { useAiStore } from "@/stores/aistore";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000"}/api/ai/chat`;
 
@@ -79,6 +80,7 @@ export default function NewChatComponent() {
   const {mutateAsync:createChat,isPending:isCreatingChat}=useCreateChat();
   const router = useRouter();
   const {setPendingMessage,setBody}=useAiStore();
+  const isOnline = useOnlineStatus();
 
   // Dynamic models from configured API keys
   const { data: apiKeys } = useApiKeys();
@@ -115,6 +117,10 @@ export default function NewChatComponent() {
       toast.error("No AI model available. Add an API key in Settings → API Keys.");
       return;
     }
+    if (!isOnline) {
+      toast.error("You're offline. AI features require an internet connection.");
+      return;
+    }
 
      try {
       const title =
@@ -130,7 +136,7 @@ export default function NewChatComponent() {
         model:selectedModel,
       });
 
-      router.push(`/chat/${chat.id}`);
+      router.push(`/chat?id=${chat.id}`);
     } catch (error) {
       console.error("Failed to create chat:", error);
     }
@@ -158,6 +164,12 @@ export default function NewChatComponent() {
             No AI models available. Go to{" "}
             <a href="/settings" className="text-primary underline">Settings → API Keys</a>{" "}
             to add a provider key.
+          </div>
+        )}
+
+        {!isOnline && (
+          <div className="text-center text-sm text-amber-600 dark:text-amber-400 mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+            You&apos;re offline. AI chat requires an internet connection. Notes &amp; folders still work.
           </div>
         )}
 
@@ -224,7 +236,7 @@ export default function NewChatComponent() {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text && !status) || !selectedModel} status={status} />
+            <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
 

@@ -2,12 +2,12 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "pslmp",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.foldex.pslmp",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3001",
     "beforeDevCommand": "bun dev",
-    "beforeBuildCommand": "bun build"
+    "beforeBuildCommand": "bun run build"
   },
   "app": {
     "windows": [

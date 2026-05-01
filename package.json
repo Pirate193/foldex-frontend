@@ -12,8 +12,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.74",
+    "@ai-sdk/deepseek": "^2.0.32",
     "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/moonshotai": "^2.0.20",
+    "@ai-sdk/openai": "^3.0.57",
     "@ai-sdk/react": "^3.0.170",
+    "@ai-sdk/xai": "^3.0.87",
     "@blocknote/code-block": "^0.48.1",
     "@blocknote/core": "^0.48.1",
     "@blocknote/react": "^0.48.1",
