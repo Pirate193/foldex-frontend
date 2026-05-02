@@ -24,6 +24,8 @@ import { Button } from "../ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { NavContent } from "./nav-content"
 import Link from "next/link"
+import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog"
+import SettingsComponent from "../settingscomponents/settings-component"
 
 // This is sample data
 const data = {
@@ -35,22 +37,20 @@ const data = {
   navMain: [
     {
       title: "Ask AI",
-      url: "/chat",
+      url: "/app?view=chat",
       icon: Sparkles,
     },
     {
       title: "Home",
-      url: "/home",
+      url: "/app?view=home",
       icon: Home,
     },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  // Note: I'm using state to show active item.
-  // IRL you should use the url/router.
-  const [activeItem, setActiveItem] = React.useState(data.navMain[0])
   const { setOpen } = useSidebar()
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   return (
     <Sidebar
@@ -84,13 +84,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild className="md:h-8 md:p-0 cursor-pointer">
-                <Link href="/settings">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors">
-                    <Settings className="size-4" />
-                  </div>
-                </Link>
-              </SidebarMenuButton>
+              <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                <DialogTrigger asChild>
+                  <SidebarMenuButton className="md:h-8 md:p-0 cursor-pointer">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+                      <Settings className="size-4" />
+                    </div>
+                  </SidebarMenuButton>
+                </DialogTrigger>
+                <DialogContent className="md:max-w-[700px] lg:max-w-[1000px] h-[85vh] p-0 overflow-hidden rounded-xl">
+                  <SettingsComponent />
+                </DialogContent>
+              </Dialog>
             </SidebarMenuItem>
           </SidebarMenu>
           <NavUser />

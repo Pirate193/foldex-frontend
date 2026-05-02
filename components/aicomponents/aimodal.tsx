@@ -29,13 +29,14 @@ import {
   usePromptInputAttachments,
   PromptInputProvider,
 } from "@/components/ai-elements/prompt-input";
-import { CopyIcon, FileText, Folder, GlobeIcon, RefreshCcwIcon } from "lucide-react";
+import { CopyIcon, FileText, GlobeIcon, MessageSquare, RefreshCcwIcon, X } from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, UIMessage } from "ai";
 import {
   Conversation,
   ConversationContent,
+  ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import {
@@ -50,7 +51,7 @@ import { useApiKeys } from "@/hooks/use-settings";
 import { getAvailableModels } from "@/lib/providers";
 import { toast } from "sonner";
 import { useAiStore } from "@/stores/aistore";
-import { useAddMessage, useChatMessages } from "@/hooks/use-chat";
+import { useAddMessage, useChatMessages, useCreateChat } from "@/hooks/use-chat";
 import { SidebarTrigger } from "../ui/sidebar";
 import { ChatHistoryPopover } from "./chathistorypopover";
 import { CreateFolder, CreateNote, GenerateCodeSnippet, GenerateMermaidDiagram, GetFolderItems, LoadingCodeSnippet, LoadingFolder, LoadingMermaidDiagram, LoadingNote, SourceGrid, UpdateFolder, UpdateNote, YouTubeEmbed } from "./toolui";
@@ -59,10 +60,12 @@ import { Spinner } from "../ui/spinner";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { isDesktopApp } from "@/lib/isdesktop";
 import { createClientTransport } from "@/lib/ai/client-transport";
+import { ChatHistoryModalPopover } from "./chathistorymodalpopover";
+import { Button } from "../ui/button";
+import { PromptTipTapEditor } from "./aitextarea";
+import { SuggestionItem } from "./suggestion-list";
 import { useFolders } from "@/hooks/use-folders";
 import { useNotes } from "@/hooks/use-notes";
-import { SuggestionItem } from "./suggestion-list";
-import { PromptTipTapEditor } from "./aitextarea";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "development" 
     ? "http://localhost:3000" 
@@ -91,54 +94,17 @@ const PromptInputAttachmentsDisplay = () => {
   );
 };
 
-export const formatMessageText = (text: string) => {
-  if (!text) return text;
-  
-  // Hunt for our [[type::label]] secret code
-  const regex = /\[\[(folder|note|file)::(.+?)\]\]/g;
-  const parts = [];
-  let lastIndex = 0;
-  let match;
-
-  while ((match = regex.exec(text)) !== null) {
-    // Add the normal text before the pill
-    if (match.index > lastIndex) {
-      parts.push(text.substring(lastIndex, match.index));
-    }
-    
-    const type = match[1];
-    const label = match[2];
-    
-    // Swap the code for a beautiful UI Pill!
-    parts.push(
-      <span key={match.index} className="inline-flex items-center gap-1 bg-primary/10 text-primary px-1.5 py-0.5 rounded-md text-sm mx-1 align-middle border border-primary/20">
-        {type === 'folder' && <Folder size={12} />}
-        {type === 'note' && <FileText size={12} />}
-        {label}
-      </span>
-    );
-    
-    lastIndex = regex.lastIndex;
-  }
-  
-  // Add any remaining text
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : text;
-};
-
-const AiChatComponent = ({chatId}:{chatId:string}) => {
+const AiModalComponent = () => {
+  const {activeChatId,setActiveChatId,context,isOpen,onClose,onOpen}=useAiStore();
   const [text, setText] = useState<string>("");
   const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
-  const {data:initialMessages,isLoading:isLoadingInitialMessages}=useChatMessages(chatId);
+  const {data:initialMessages,isLoading:isLoadingInitialMessages}=useChatMessages(activeChatId!);
   const {mutateAsync:addMessage,isPending:isPendingAddMessage}=useAddMessage();
+  const {mutateAsync:createChat,isPending:isPendingCreateChat}=useCreateChat();
   const [contextFolder, setContextFolder] = useState<{id:string,name: string}[]>([]);
-    const [contextNote, setContextNote] = useState<{id:string,title: string}[]>([]);
-    const {data:allFolders}=useFolders();
-    const {data:allNotes}=useNotes();
-
+  const [contextNote, setContextNote] = useState<{id:string,title: string}[]>([]);
+  const {data:allFolders}=useFolders();
+  const {data:allNotes}=useNotes();
   // Dynamic models
   const { data: apiKeys } = useApiKeys();
   const configuredProviders = useMemo(
@@ -162,6 +128,11 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
   const pendingMessage = useAiStore((state) => state.pendingMessage);
   const setPendingMessage = useAiStore((state) => state.setPendingMessage);
   const hasInitialized = useRef(false);
+   const activeChatIdRef = useRef(activeChatId);
+
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
 
   // Desktop: run AI directly in browser via ClientChatTransport
   // Web: send to backend API via DefaultChatTransport
@@ -177,15 +148,16 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
 
   const { messages, status, sendMessage,setMessages,regenerate } = useChat({
     transport,
-    id: chatId,
+    id: activeChatId || undefined,
     onFinish: async (message) => {
-        if (message.message.role === "assistant") {
+        const currentChatId = activeChatIdRef.current;
+        if (message.message.role === "assistant" && currentChatId) {
           const textContent = message.message.parts
             .filter((part) => part.type === "text")
             .map((part) => part.text)
             .join("\n");
           await addMessage({
-            id:chatId,
+            id:currentChatId,
             body:{
               role: message.message.role,
               content: textContent,
@@ -198,12 +170,20 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
       toast.error(error.message || "Something went wrong with the AI request");
     },
   });
+    useEffect(() => {
+    console.log("activeChatId", activeChatId);
+    console.log("clearing old messages now ")
+    hasInitialized.current = false; // Allow the new chat to load
+    pendingMessageProcessedRef.current = false; 
+    setMessages([]); // Clear old messages immediately to avoid "ghosting"
+  }, [activeChatId, setMessages]);
   useEffect(() => {
     if (
       initialMessages &&
       initialMessages.length > 0 &&
       !hasInitialized.current
     ) {
+      console.log("initializing messages");
       hasInitialized.current = true;
       const transformedMessages = initialMessages.map((msg) => ({
         id: msg.id,
@@ -230,10 +210,33 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
       toast.error("You're offline. AI features require an internet connection.");
       return;
     }
-
+    let currentChatId = activeChatId;
+    if(!currentChatId){
+        const title = message.text.slice(0, 50) + (message.text.length > 50 ? "..." : "");
+        const chat = await createChat({
+            title:title
+        });
+        try {
+          await addMessage({
+            id:chat.id,
+            body:{
+              role: "user",
+              content: message.text || "",
+              parts: [{ type: "text", text: message.text }],
+            }
+            
+          });
+        } catch (error) {
+          console.error("Failed to save user message:", error);
+        }
+        setActiveChatId(chat.id);
+        setPendingMessage(message);
+        setText("");
+        return;
+    }
     try {
       await addMessage({
-        id:chatId,
+        id:currentChatId,
         body:{
           role: "user",
           content: message.text || "",
@@ -261,36 +264,15 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
     setText("");
   };
   useEffect(() => {
+    if(activeChatId && pendingMessage){
     const sendInitialMessage = async () => {
       // Check if there is a pending message and we haven't processed it yet
       if (
         pendingMessage &&
-        !pendingMessageProcessedRef.current &&
-        initialMessages &&
-        initialMessages.length === 0
+        !pendingMessageProcessedRef.current 
       ) {
         console.log("Sending pending message from store:", pendingMessage);
         pendingMessageProcessedRef.current = true;
-
-        // Send the pending message
-            
-    
-        setModel(body.model);
-        setUseWebSearch(body.webSearch);
-        try {
-          await addMessage({
-            id:chatId,
-            body:{
-              role: "user",
-              content: pendingMessage.text || "",
-              parts: [{ type: "text", text: pendingMessage.text }],
-            }
-            
-          });
-        } catch (error) {
-          console.error("Failed to save user message:", error);
-        }
-        console.log("body", body);
         sendMessage(
           {
             text: pendingMessage.text || "",
@@ -300,8 +282,8 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
             body: {
               webSearch: useWebSearch,
               model: selectedModel,
-              contextFolder:body.contextFolder,
-              contextNote:body.contextNote,
+              contextFolder:contextFolder,
+              contextNote:contextNote,
             },
           },
         );
@@ -312,49 +294,59 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
     };
 
     sendInitialMessage();
+  }
   }, [pendingMessage, initialMessages, setPendingMessage, body]);
 
   const mentionItems: SuggestionItem[] = [
-      ...(allFolders?.map(f => ({ id: f.id, label: f.name, type: 'folder' as const })) || []),
-      ...(allNotes?.map(n => ({ id: n.id, label: n.title, type: 'note' as const })) || []),
-    ]
-  
-     const handleMentionsChange = (extractedMentions: {id: string, type: string}[]) => {
-      // Filter the original data arrays to match the IDs extracted from the Tiptap JSON
-      if (allFolders) {
-        setContextFolder(allFolders.filter(f => extractedMentions.some(m => m.id === f.id && m.type === 'folder')))
+        ...(allFolders?.map(f => ({ id: f.id, label: f.name, type: 'folder' as const })) || []),
+        ...(allNotes?.map(n => ({ id: n.id, label: n.title, type: 'note' as const })) || []),
+      ]
+    
+       const handleMentionsChange = (extractedMentions: {id: string, type: string}[]) => {
+        // Filter the original data arrays to match the IDs extracted from the Tiptap JSON
+        if (allFolders) {
+          setContextFolder(allFolders.filter(f => extractedMentions.some(m => m.id === f.id && m.type === 'folder')))
+        }
+        if (allNotes) {
+          setContextNote(allNotes.filter(n => extractedMentions.some(m => m.id === n.id && m.type === 'note')))
+        }
       }
-      if (allNotes) {
-        setContextNote(allNotes.filter(n => extractedMentions.some(m => m.id === n.id && m.type === 'note')))
-      }
-    }
-    const promptItems: SuggestionItem[] = [
-      {
-        id: "summarize",
-        label: "Summarize",
-        type: "prompt",
-        description: "Create a detailed summary of the attached documents",
-        promptText: "Please provide a comprehensive summary of the attached materials. Break it down into key themes, main arguments, and actionable takeaways."
-      },
-      {
-        id: "quiz",
-        label: "Quiz Me",
-        type: "prompt",
-        description: "Generate 5 practice questions",
-        promptText: "Act as an expert tutor. Based on this material, generate 5 challenging multiple-choice questions to test my understanding. Do not provide the answers until I respond."
-      }
-    ]
+      const promptItems: SuggestionItem[] = [
+        {
+          id: "summarize",
+          label: "Summarize",
+          type: "prompt",
+          description: "Create a detailed summary of the attached documents",
+          promptText: "Please provide a comprehensive summary of the attached materials. Break it down into key themes, main arguments, and actionable takeaways."
+        },
+        {
+          id: "quiz",
+          label: "Quiz Me",
+          type: "prompt",
+          description: "Generate 5 practice questions",
+          promptText: "Act as an expert tutor. Based on this material, generate 5 challenging multiple-choice questions to test my understanding. Do not provide the answers until I respond."
+        }
+      ]
   return (
-    <div className=" p-6 relative size-full">
-      <div className="flex flex-col h-full">
-        <div className="flex gap-3 items-center">
-        <SidebarTrigger />
-        <ChatHistoryPopover />
+    
+      <div className="flex flex-col h-full p-2">
+        <div className="flex gap-3 items-center justify-between">
+        <ChatHistoryModalPopover />
+         <Button variant="ghost" className="cursor-pointer" onClick={() => onClose()}>
+            <X className="size-4" />
+          </Button>
       </div>
         <Conversation>
           <ConversationContent>
+            {messages.length === 0 && (
+             <ConversationEmptyState
+                icon={<FileText className="size-12 text-primary" />}
+                title="Start a new Chat"
+                description="Ask Questions,Summarize,and create something new"
+              />
+            )}
             {messages.map((message, messageIndex) => {
-             // 1. Combine all text parts into one string for the Copy button
+                // 1. Combine all text parts into one string for the Copy button
               const fullText = message.parts
                 .filter((p) => p.type === "text")
                 .map((p) => p.text)
@@ -362,16 +354,16 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
 
               // 2. Check if this is the very last message in the entire chat
               const isLastMessageInChat = messageIndex === messages.length - 1;
-            return(
+              return (
               <Message from={message.role} key={message.id}>
                 <MessageContent>
                   {message.parts.map((part, i) => {
                     switch (part.type) {
                       case "text":
-                      return (
-                          <MessageResponse key={`${message.id}-${i}`}  >
+                        return (
+                          <MessageResponse key={`${message.id}-${i}`} >
                             {part.text}
-                          </MessageResponse>  
+                          </MessageResponse>
                         );
                        case "reasoning":
                           return (
@@ -551,7 +543,8 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
           <ConversationScrollButton />
         </Conversation>
 
-       <PromptInputProvider>
+        <PromptInputProvider>
+
         <PromptInput
           onSubmit={handleSubmit}
           className="mt-4"
@@ -622,13 +615,13 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
+            <PromptInputSubmit disabled={(!text || !status) || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
         </PromptInputProvider>
       </div>
-    </div>
+    
   );
 };
 
-export default AiChatComponent;
+export default AiModalComponent;

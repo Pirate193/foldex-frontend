@@ -3,7 +3,9 @@ import { redirect } from "next/navigation";
 import { isDesktopApp } from "./isdesktop";
 
 const apiClient = axios.create({
-    baseURL:process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+    baseURL: process.env.NODE_ENV === "development" 
+    ? "http://localhost:3000" 
+    : "https://api.pslmp.foldex.space",
     withCredentials:true,
     headers:{
         "Content-Type":"application/json"

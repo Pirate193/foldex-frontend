@@ -3,9 +3,11 @@ import { getLocalDb } from "../localdb";
 import { apiKeyMeta } from "../schema.local";
 import { Stronghold } from '@tauri-apps/plugin-stronghold';
 
-const VAULT_PATH = 'pslmp-vault.bin';
-const VAULT_PASS = 'pslmp-vault-password'; // local default vault password
-const CLIENT_NAME = 'pslmp_client';
+const VAULT_PATH = process.env.NODE_ENV === "development" 
+    ? 'pslmp-vault-dev.bin' 
+    : 'pslmp-vault_local.bin';
+const VAULT_PASS = 'pslmp-vault-local-password'; // local default vault password
+const CLIENT_NAME = 'pslmp_client_local';
 
 async function getStore() {
     const stronghold = await Stronghold.load(VAULT_PATH, VAULT_PASS);
@@ -74,8 +76,13 @@ export const saveApiKeyMeta = async (provider: string, key: string) => {
 export const deleteApiKeyMeta = async (provider: string) => {
     try {
         const { store, stronghold } = await getStore();
-        await store.remove(`apikey_${provider}`);
-        await stronghold.save();
+        // Stronghold remove can throw if key doesn't exist — that's fine
+        try {
+            await store.remove(`apikey_${provider}`);
+            await stronghold.save();
+        } catch (e) {
+            console.warn(`[deleteApiKey] Stronghold remove failed for ${provider} (may not exist):`, e);
+        }
 
         const db = await getLocalDb();
         await db.delete(apiKeyMeta).where(eq(apiKeyMeta.provider, provider));

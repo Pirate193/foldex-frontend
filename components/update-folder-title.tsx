@@ -1,43 +1,43 @@
 "use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useNote, useUpdateNote } from "@/hooks/use-notes";
+import { useFolder, useUpdateFolder } from "@/hooks/use-folders";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
 
 interface UpdateTitleProps {
-  noteId: string;
+  folderId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const UpdateTitle = ({ noteId, open, onOpenChange }: UpdateTitleProps) => {
-  const {mutateAsync:updateTitle} = useUpdateNote();
-  const {data:note} = useNote(noteId);
+const UpdateFolderTitle = ({ folderId, open, onOpenChange }: UpdateTitleProps) => {
+  const {mutateAsync:updateTitle} = useUpdateFolder();
+  const {data:folder} = useFolder(folderId);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    if (note && open) {
+    if (folder && open) {
       queueMicrotask(() => {
-        setTitle(note.title);
+        setTitle(folder.name);
       });
     }
-  }, [note, open]);
+  }, [folder, open]);
   const handlerename = async () => {
     setLoading(true);
     setError(null);
     try {
-      await updateTitle({ id: noteId, data: { title: title } });
+      await updateTitle({ id: folderId, data: { name: title } });
       setLoading(false);
       onOpenChange(false);
-      toast.success("Note renamed successfully");
+      toast.success("Folder renamed successfully");
     } catch (error) {
       console.log(error);
-      setError("Failed to rename note.");
+      setError("Failed to rename folder.");
       setLoading(false);
     }
   };
@@ -46,14 +46,13 @@ const UpdateTitle = ({ noteId, open, onOpenChange }: UpdateTitleProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Rename Note</DialogTitle>
+          <DialogTitle>Rename Folder</DialogTitle>
         </DialogHeader>
         <div>
           <Input
-            autoFocus
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => {if (e.key === "Enter") handlerename()}}
+             value={title}
+             onChange={(e:any) => setTitle(e.target.value)}
+             onKeyDown={(e) => {if (e.key === "Enter") handlerename()}}
           />
         </div>
         <div className="mt-4 flex justify-end gap-2">
@@ -65,7 +64,7 @@ const UpdateTitle = ({ noteId, open, onOpenChange }: UpdateTitleProps) => {
           >
             Cancel
           </Button>
-          <Button disabled={loading} onClick={handlerename}>
+          <Button disabled={loading} onClick={handlerename} className="cursor-pointer">
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Rename
           </Button>
@@ -75,4 +74,4 @@ const UpdateTitle = ({ noteId, open, onOpenChange }: UpdateTitleProps) => {
   );
 };
 
-export default UpdateTitle;
+export default UpdateFolderTitle;

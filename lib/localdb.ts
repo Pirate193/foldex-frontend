@@ -10,7 +10,10 @@ export const getLocalDb = async () => {
   if (localDbInstance) return localDbInstance;
 
   // 1. Tell Tauri to create or open a file named 'pslmp.db' on the hard drive
-  const tauriDb = await Database.load("sqlite:pslmp.db");
+  const dbName = process.env.NODE_ENV === "development" 
+    ? "sqlite:pslmp_dev.db" 
+    : "sqlite:pslmp_local.db";
+  const tauriDb = await Database.load(dbName);
 
   // 2. Create the proxy so Drizzle can talk to Tauri
   localDbInstance = drizzle(

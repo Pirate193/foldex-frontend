@@ -27,9 +27,10 @@ import {
   PromptInputFooter,
   PromptInputTools,
   usePromptInputAttachments,
+  PromptInputProvider,
 } from "@/components/ai-elements/prompt-input";
 import { GlobeIcon } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Suggestion, Suggestions } from "../ai-elements/suggestion";
@@ -41,6 +42,11 @@ import { useCreateChat } from "@/hooks/use-chat";
 import { useRouter } from "next/navigation";
 import { useAiStore } from "@/stores/aistore";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useSession } from "@/hooks/use-auth";
+import { useFolders } from "@/hooks/use-folders";
+import { useNotes } from "@/hooks/use-notes";
+import { SuggestionItem } from "./suggestion-list";
+import { PromptTipTapEditor } from "./aitextarea";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000"}/api/ai/chat`;
 
@@ -81,6 +87,12 @@ export default function NewChatComponent() {
   const router = useRouter();
   const {setPendingMessage,setBody}=useAiStore();
   const isOnline = useOnlineStatus();
+  const {data:user}=useSession();
+  const [contextFolder, setContextFolder] = useState<{id:string,name: string}[]>([]);
+  const [contextNote, setContextNote] = useState<{id:string,title: string}[]>([]);
+  const {data:allFolders}=useFolders();
+  const {data:allNotes}=useNotes();
+  
 
   // Dynamic models from configured API keys
   const { data: apiKeys } = useApiKeys();
@@ -94,6 +106,45 @@ export default function NewChatComponent() {
   );
   const hasTavilyKey = configuredProviders.includes("tavily");
   const [model, setModel] = useState<string>("");
+  // 1. Add the greeting state
+  const [greeting, setGreeting] = useState<string>("How can I help you today?");
+
+  // 2. Add the time-based logic
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const userName = user?.user.name || "User" ; 
+
+    const morning = [
+      `Good morning, ${userName} ☀️`, 
+      `Early bird catches the worm, ${userName}!`, 
+      `Ready to crush it today, ${userName}?`
+    ];
+    const afternoon = [
+      `Good afternoon, ${userName} 👋`, 
+      `Back at it, ${userName}?`, 
+      `Keep up the momentum, ${userName}!`
+    ];
+    const evening = [
+      `Good evening, ${userName} 🌙`, 
+      `${userName} returns! 🔥`, 
+      `Ready to study, ${userName}?`
+    ];
+    const night = [
+      `Late night session, ${userName}? 🦉`, 
+      `Burning the midnight oil, ${userName}?`, 
+      `Still awake, ${userName}?`
+    ];
+
+    let options = [];
+    if (hour < 12) options = morning;
+    else if (hour < 17) options = afternoon;
+    else if (hour < 22) options = evening;
+    else options = night; // 10 PM to Midnight
+
+    // Pick a random greeting from the selected time block
+    const randomGreeting = options[Math.floor(Math.random() * options.length)];
+    setGreeting(randomGreeting);
+  }, []);
 
   // Set default model once available
   const selectedModel = model || (availableModels.length > 0 ? availableModels[0].model.id : "");
@@ -126,17 +177,17 @@ export default function NewChatComponent() {
       const title =
         message.text.slice(0, 50) + (message.text.length > 50 ? "..." : "");
       const chat = await createChat({ title });
-
-
-      // Don't generate title here - wait for AI response in page's chat component
+     // Don't generate title here - wait for AI response in page's chat component
 
       setPendingMessage(message);
       setBody({
         webSearch:useWebSearch,
         model:selectedModel,
+        contextFolder:contextFolder,
+        contextNote:contextNote,
       });
 
-      router.push(`/chat?id=${chat.id}`);
+      router.push(`/app?view=chat&id=${chat.id}`);
     } catch (error) {
       console.error("Failed to create chat:", error);
     }
@@ -146,6 +197,36 @@ export default function NewChatComponent() {
     setText(suggestion);
   };
 
+  const mentionItems: SuggestionItem[] = [
+    ...(allFolders?.map(f => ({ id: f.id, label: f.name, type: 'folder' as const })) || []),
+    ...(allNotes?.map(n => ({ id: n.id, label: n.title, type: 'note' as const })) || []),
+  ]
+
+   const handleMentionsChange = (extractedMentions: {id: string, type: string}[]) => {
+    // Filter the original data arrays to match the IDs extracted from the Tiptap JSON
+    if (allFolders) {
+      setContextFolder(allFolders.filter(f => extractedMentions.some(m => m.id === f.id && m.type === 'folder')))
+    }
+    if (allNotes) {
+      setContextNote(allNotes.filter(n => extractedMentions.some(m => m.id === n.id && m.type === 'note')))
+    }
+  }
+  const promptItems: SuggestionItem[] = [
+    {
+      id: "summarize",
+      label: "Summarize",
+      type: "prompt",
+      description: "Create a detailed summary of the attached documents",
+      promptText: "Please provide a comprehensive summary of the attached materials. Break it down into key themes, main arguments, and actionable takeaways."
+    },
+    {
+      id: "quiz",
+      label: "Quiz Me",
+      type: "prompt",
+      description: "Generate 5 practice questions",
+      promptText: "Act as an expert tutor. Based on this material, generate 5 challenging multiple-choice questions to test my understanding. Do not provide the answers until I respond."
+    }
+  ]
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
       {/* header */}
@@ -156,7 +237,7 @@ export default function NewChatComponent() {
 
       <div className="p-6 flex-1 flex flex-col justify-center">
         <div className="p-4 flex justify-center items-center">
-          <h1 className="text-3xl font-bold">How can I help you with your studies today?</h1>
+          <h1 className="text-3xl font-bold">{greeting}</h1>
         </div>
 
         {availableModels.length === 0 && (
@@ -173,6 +254,7 @@ export default function NewChatComponent() {
           </div>
         )}
 
+      <PromptInputProvider>
         <PromptInput
           onSubmit={handleSubmit}
           className="mt-4"
@@ -183,10 +265,17 @@ export default function NewChatComponent() {
             <PromptInputAttachmentsDisplay />
           </PromptInputHeader>
           <PromptInputBody>
-            <PromptInputTextarea
-              onChange={(e) => setText(e.target.value)}
-              value={text}
-            />
+            <PromptTipTapEditor
+                 mentionItems={mentionItems}
+                 promptItems={promptItems}
+                 onMentionsChange={handleMentionsChange}
+                 onSubmit={(_text, currentMentions) => {
+                   const form = document.querySelector('.tiptap')?.closest('form') as HTMLFormElement
+                   if (form && typeof form.requestSubmit === 'function') {
+                     form.requestSubmit()
+                   }
+                 }}
+               />
           </PromptInputBody>
           <PromptInputFooter>
             <PromptInputTools>
@@ -239,6 +328,7 @@ export default function NewChatComponent() {
             <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
+        </PromptInputProvider>
 
         <div className="flex flex-row justify-center mt-2 px-4">
           <Suggestions>

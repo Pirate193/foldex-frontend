@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
 
   // Authenticated user trying to visit sign-in/sign-up → send to /home
   if (isAuthRoute && sessionToken) {
-    return NextResponse.redirect(new URL("/home", request.url));
+    return NextResponse.redirect(new URL("/app?view=home", request.url));
   }
 
   // Public route or API route → let it through regardless

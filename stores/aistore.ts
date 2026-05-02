@@ -11,8 +11,14 @@ export type AiContext =
 
 interface Aibody {
   webSearch: boolean;
-  contextFolder?: Folder[];
-  contextNote?: Note[];
+  contextFolder?: {
+    id:string,
+    name:string
+  }[];
+  contextNote?: {
+    id:string,
+    title:string
+  }[];
   model: string;
 }
 interface AiStore {

@@ -22,6 +22,7 @@ import {
 } from "../ui/context-menu";
 import UpdateTitle from "../notescomponent/update-title";
 import DeleteDialog from "../deletedialog";
+import UpdateFolderTitle from "../update-folder-title";
 
 interface FolderCardProps {
   folder: Folder;
@@ -171,7 +172,7 @@ export function FolderCard({ folder, view, isSelected, onToggleSelect }: FolderC
           {contextMenuContent}
         </ContextMenu>
 
-        <UpdateTitle open={openRenameDialog} onOpenChange={setOpenRenameDialog} noteId={folder.id} />
+        <UpdateFolderTitle open={openRenameDialog} onOpenChange={setOpenRenameDialog} folderId={folder.id} />
         <DeleteDialog
           open={openDeleteDialog}
           onOpenChange={setOpenDeleteDialog}
@@ -248,7 +249,7 @@ export function FolderCard({ folder, view, isSelected, onToggleSelect }: FolderC
         {contextMenuContent}
       </ContextMenu>
 
-      <UpdateTitle open={openRenameDialog} onOpenChange={setOpenRenameDialog} noteId={folder.id} />
+      <UpdateFolderTitle open={openRenameDialog} onOpenChange={setOpenRenameDialog} folderId={folder.id} />
       <DeleteDialog
         open={openDeleteDialog}
         onOpenChange={setOpenDeleteDialog}

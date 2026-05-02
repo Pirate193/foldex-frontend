@@ -593,7 +593,7 @@ export default function SettingsComponent() {
   ] as const;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background rounded-xl overflow-hidden w-full">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">

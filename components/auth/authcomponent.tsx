@@ -87,7 +87,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
       console.log("OTP verified successfully")
       // Save user to local DB and localStorage
       await saveUserLocally(data.user);
-      router.push("/home");
+      router.push("/app?view=home");
     }
   }
 
@@ -116,7 +116,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
     setGoogleLoading(true);
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/home",
+      callbackURL: "/app?view=home",
     });
     setGoogleLoading(false);
   }
@@ -127,8 +127,8 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="absolute -top-12 left-0" 
-          onClick={() => router.push("/home")}
+          className="absolute -top-12 left-0 cursor-pointer" 
+          onClick={() => router.push("/app?view=home")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to App

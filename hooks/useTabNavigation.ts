@@ -19,9 +19,9 @@ function buildTabUrl(
 
   switch (type) {
     case 'note': {
-      const params = new URLSearchParams({ id: itemId });
+      const params = new URLSearchParams({ view: 'note', id: itemId });
       if (folderId) params.set('folderId', folderId);
-      return `/note?${params.toString()}`;
+      return `/app?${params.toString()}`;
     }
     default:
       return '/';
@@ -56,8 +56,8 @@ export function parseTabFromUrl(pathnameOrUrl: string): {
     searchParams = new URLSearchParams();
   }
 
-  // New format: /note?id=xxx&folderId=yyy
-  if (pathname === '/note') {
+  // New format: /app?view=note&id=xxx&folderId=yyy
+  if (pathname === '/app' && searchParams.get('view') === 'note') {
     const id = searchParams.get('id');
     if (id) {
       return {

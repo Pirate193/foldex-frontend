@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "pslmp",
-        "url": "/home",
+        "url": "/app?view=home",
         "userAgent": "pslmp Tauri Desktop",
         "width": 800,
         "height": 600,
