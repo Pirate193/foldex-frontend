@@ -21,7 +21,7 @@ import {
   RotateCcw,
   Lightbulb,
 } from "lucide-react";
-import { generateFlashcardsAction } from "@/actions/generatequiz";
+
 import { toast } from "sonner";
 
 export const flashcardblock = createReactBlockSpec(
@@ -75,19 +75,19 @@ export const flashcardblock = createReactBlockSpec(
             .join("\n");
 
           const count = parseInt(numberOfFlashcards);
-          const data = await generateFlashcardsAction(
-            topic,
-            count,
-            noteContent
-          );
+          // const data = await generateFlashcardsAction(
+          //   topic,
+          //   count,
+          //   noteContent
+          // );
 
-          props.editor.updateBlock(props.block, {
-            props: {
-              topic: topic,
-              flashcardData: JSON.stringify(data),
-              isGeneratingInitial: false,
-            },
-          });
+          // props.editor.updateBlock(props.block, {
+          //   props: {
+          //     topic: topic,
+          //     flashcardData: JSON.stringify(data),
+          //     isGeneratingInitial: false,
+          //   },
+          // });
           setIsOpen(false);
         } catch (error) {
           console.log(error);

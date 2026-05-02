@@ -1,12 +1,14 @@
 "use client";
 
 import * as React from "react";
+import { Suspense } from "react";
 import { SidebarInset, SidebarProvider, useSidebar } from "@/components/ui/sidebar"; // Import useSidebar here
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { AppSidebar } from "./app-sidebar";
 import { TabLayout } from "../tabs/tabLayout";
+import { OfflineBanner } from "../offline-banner";
 
 
 const DEFAULT_SIDEBAR_WIDTH = 280;
@@ -143,9 +145,12 @@ export function ResizableSidebarLayout({
       />
       
       <SidebarInset>
-        <TabLayout>
-          {children}
-        </TabLayout>
+        <OfflineBanner />
+        <Suspense>
+          <TabLayout>
+            {children}
+          </TabLayout>
+        </Suspense>
         <Toaster />
       </SidebarInset>
     </SidebarProvider>

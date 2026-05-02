@@ -38,6 +38,7 @@ import DeleteDialog from "../deletedialog";
 // We'll just define the props we need, might need to import your actual update title dialog.
 import UpdateTitle from "../notescomponent/update-title"; 
 import { FOLDER_COLORS, getFolderColor } from "@/lib/foldercolor";
+import UpdateFolderTitle from "../update-folder-title";
 
 const COLORS = [
   { name: "Default", value: "default" },
@@ -229,20 +230,20 @@ export function FolderTreeItem({
         </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuGroup>
-            <ContextMenuItem onClick={handleCreateNote}>
+            <ContextMenuItem onClick={handleCreateNote} className="cursor-pointer">
               <Plus className="mr-2 h-4 w-4" />
               New note inside
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => setRenameDialogOpen(true)}>
+            <ContextMenuItem onClick={() => setRenameDialogOpen(true)} className="cursor-pointer">
               <Pencil className="mr-2 h-4 w-4" />
               Rename
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleTogglePin}>
+            <ContextMenuItem onClick={handleTogglePin} className="cursor-pointer">
               {folder.isPinned ? <PinOff className="mr-2 h-4 w-4" /> : <Pin className="mr-2 h-4 w-4" />}
               {folder.isPinned ? "Unpin folder" : "Pin folder"}
             </ContextMenuItem>
             <ContextMenuSub>
-              <ContextMenuSubTrigger>
+              <ContextMenuSubTrigger className="cursor-pointer">
                 <Palette className="mr-2 h-4 w-4" />
                 Color
               </ContextMenuSubTrigger>
@@ -259,7 +260,7 @@ export function FolderTreeItem({
                             void handleChangeColor(colorOption.value);
                           }}
                           className={cn(
-                            "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-transform hover:scale-105",
+                            "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-transform hover:scale-105 cursor-pointer",
                             isSelected
                               ? "border-foreground/80 shadow-sm"
                               : "border-transparent"
@@ -279,7 +280,7 @@ export function FolderTreeItem({
           </ContextMenuGroup>
           <ContextMenuSeparator />
           <ContextMenuGroup>
-            <ContextMenuItem variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <ContextMenuItem variant="destructive" className="cursor-pointer" onClick={() => setDeleteDialogOpen(true)}>
               <Trash className="mr-2 h-4 w-4" />
               Delete
             </ContextMenuItem>
@@ -312,7 +313,11 @@ export function FolderTreeItem({
         </div>
       )}
 
-      {/* RE-USE UpdateTitle from notes component temporarily, or you could make a dedicated one for folders */}
+      <UpdateFolderTitle 
+      open={renameDialogOpen}
+      onOpenChange={setRenameDialogOpen}
+      folderId={folder.id}
+      />
       <DeleteDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}

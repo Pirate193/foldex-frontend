@@ -49,7 +49,12 @@ const UpdateTitle = ({ noteId, open, onOpenChange }: UpdateTitleProps) => {
           <DialogTitle>Rename Note</DialogTitle>
         </DialogHeader>
         <div>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onKeyDown={(e) => {if (e.key === "Enter") handlerename()}}
+          />
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <Button

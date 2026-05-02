@@ -68,7 +68,7 @@ export function TabBar() {
       }
     } else if (!newState.activeTabId) {
       // No tabs left — soft navigate to home
-            router.push("/home");
+            router.push("/app?view=home");
     }
   };
 
@@ -179,7 +179,7 @@ export function TabBar() {
                 <ContextMenuSeparator />
                 <ContextMenuItem onClick={() => {
                   closeAllTabs();
-                  router.push("/home");
+                  router.push("/app?view=home");
                 }}>
                   Close All
                 </ContextMenuItem>

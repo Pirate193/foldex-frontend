@@ -1,20 +1,30 @@
 import axios from "axios";
 import { redirect } from "next/navigation";
+import { isDesktopApp } from "./isdesktop";
 
 const apiClient = axios.create({
-    baseURL:process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000",
+    baseURL: process.env.NODE_ENV === "development" 
+    ? "http://localhost:3000" 
+    : "https://api.pslmp.foldex.space",
     withCredentials:true,
     headers:{
         "Content-Type":"application/json"
     }
 })
 
+
+
 //global error handler when unauthenticated
 apiClient.interceptors.response.use(
     (response)=>response,
     (error)=>{
         if(error.response?.status === 401){
-            redirect("/sign-in")
+            // On desktop, don't redirect — cloud API calls may fail
+            // because session cookies aren't available cross-origin.
+            // The app works fine with just the local SQLite DB.
+            if (!isDesktopApp()) {
+                redirect("/sign-in")
+            }
         }
         return Promise.reject(error)
     }

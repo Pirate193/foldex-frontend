@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Popover,
   PopoverContent,
@@ -52,8 +52,8 @@ import { Chat } from '@/lib/api-types';
 export function ChatHistoryPopover() {
   const {data:chats} = useChats();
   const router = useRouter();
-  const params = useParams();
-  const chatId = params.chatId;
+  const searchParams = useSearchParams();
+  const chatId = searchParams.get('id');
 
     // Mutations
     const {mutateAsync:deleteChat} = useDeleteChat();
@@ -100,7 +100,7 @@ export function ChatHistoryPopover() {
       await deleteChat(selectedChat.id);
       toast.success('Chat deleted.');
       setDeleteAlertOpen(false);
-      if (chatId === selectedChat.id) router.push(`/chat`);
+      if (chatId === selectedChat.id) router.push(`/app?view=chat`);
       setSelectedChat(null);
     } catch (e) {
       toast.error('Failed to delete chat.');
@@ -146,7 +146,7 @@ export function ChatHistoryPopover() {
                       <Button
                         variant="ghost"
                         className="flex-1 justify-start gap-2 font-normal truncate cursor-pointer"
-                        onClick={() => router.push(`/chat/${chat.id}`)}
+                        onClick={() => router.push(`/app?view=chat&id=${chat.id}`)}
                       >
                         <MessageSquare className="h-4 w-4" />
                         <span className="truncate">{chat.title}</span>
@@ -202,7 +202,7 @@ export function ChatHistoryPopover() {
             <Button
               variant="ghost"
               className="w-full justify-start gap-2 cursor-pointer"
-              onClick={() => router.push(`/chat`)}
+              onClick={() => router.push(`/app?view=chat`)}
             >
               <Plus className="h-4 w-4" />
               New Chat
@@ -231,6 +231,7 @@ export function ChatHistoryPopover() {
                 id="title"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={e=>e.key === "Enter" && handleRenameSubmit()}
                 className="col-span-3"
               />
             </div>

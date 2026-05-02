@@ -45,6 +45,7 @@ import { exportNoteToPDF } from "@/lib/notetopdfhelper";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { useDeleteNote, useNote } from "@/hooks/use-notes";
 import { useFolder } from "@/hooks/use-folders";
+import { useAiStore } from "@/stores/aistore";
 
 
 interface Props {
@@ -61,6 +62,7 @@ const Notesheader = ({ noteId, folderId }: Props) => {
   const [openTranscribeDialog, setOpenTranscribeDialog] = useState(false);
   const {mutateAsync:deletenote,isPending:deletenoteLoading} = useDeleteNote() ;
   const { openInTab } = useTabNavigation();
+  const {isOpen,onOpen}=useAiStore();
 
 
   if (noteLoading || folderLoading) {
@@ -82,7 +84,7 @@ const Notesheader = ({ noteId, folderId }: Props) => {
     try {
       await deletenote(noteId);
       toast.success("Note deleted successfully");
-      router.push("/home")
+      router.push("/app?view=home")
     } catch (error) {
       console.log(error);
       toast.error("Failed to delete note");
@@ -177,12 +179,16 @@ const Notesheader = ({ noteId, folderId }: Props) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+            {!isOpen && (
             <Button
+              onClick={() => onOpen({ type: "note", id: noteId, name: "note" })}
               className="cursor-pointer"
-              size="icon-sm"
+                  size="icon-sm"
+              
             >
               <Sparkles className="h-4 w-4" />
             </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

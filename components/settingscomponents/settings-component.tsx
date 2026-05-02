@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { SidebarTrigger, useSidebar } from "../ui/sidebar";
-import { Settings, Key, MessageSquare, Eye, EyeOff, Check, X, Loader2, Trash2, RotateCcw, GlobeIcon, User, Palette, Menu } from "lucide-react";
+import { Settings, Key, MessageSquare, Eye, EyeOff, Check, X, Loader2, Trash2, RotateCcw, GlobeIcon, User, Palette, Menu, LogIn } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
@@ -15,16 +15,50 @@ import { authClient, useSession } from "@/lib/auth-client";
 import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Kbd } from "../ui/kbd";
+import { isDesktopApp } from "@/lib/isdesktop";
+import { useRouter } from "next/navigation";
 
 // ─── Account Section ───
 function AccountSection() {
   const { data: session, isPending } = useSession();
-  const [name, setName] = useState(session?.user?.name || "");
+  const [name, setName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const router = useRouter();
 
-  // Update local state when session loads
+  // Desktop: load user from local SQLite
+  const [localUserInfo, setLocalUserInfo] = useState<{
+    id: string; name: string; email: string; image: string | null;
+  } | null>(null);
+  const [localLoading, setLocalLoading] = useState(true);
+
   useEffect(() => {
-    if (session?.user && !name && !isPending && !isUpdating) {
+    if (!isDesktopApp()) {
+      setLocalLoading(false);
+      return;
+    }
+    const loadLocalUser = async () => {
+      try {
+        const { getLocalDb } = await import("@/lib/localdb");
+        const { localUser } = await import("@/lib/schema.local");
+        const { eq } = await import("drizzle-orm");
+        const db = await getLocalDb();
+        const [user] = await db.select().from(localUser).where(eq(localUser.isLoggedIn, true));
+        if (user) {
+          setLocalUserInfo(user);
+          setName(user.name);
+        }
+      } catch (e) {
+        console.error("Failed to load local user for settings:", e);
+      } finally {
+        setLocalLoading(false);
+      }
+    };
+    loadLocalUser();
+  }, []);
+
+  // Update local state when web session loads
+  useEffect(() => {
+    if (!isDesktopApp() && session?.user && !name && !isPending && !isUpdating) {
       setName(session.user.name || "");
     }
   }, [session, name, isPending, isUpdating]);
@@ -44,13 +78,44 @@ function AccountSection() {
     }
   };
 
-  if (isPending) {
+  // Determine loading state
+  const isLoading = isDesktopApp() ? localLoading : isPending;
+
+  if (isLoading) {
     return <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
 
-  if (!session?.user) return null;
+  // Determine user from either source
+  const user = isDesktopApp() ? localUserInfo : session?.user ?? null;
 
-  const user = session.user;
+  // Guest mode — show sign-in CTA
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-medium">Account</h3>
+          <p className="text-sm text-muted-foreground">Sign in to sync your data across devices and access cloud features.</p>
+        </div>
+        <Separator />
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+            <User className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <div className="text-center space-y-1">
+            <h4 className="text-sm font-medium">You&apos;re using pslmp as a guest</h4>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Your data is stored locally on this device. Sign in to enable cloud sync and access your notes from anywhere.
+            </p>
+          </div>
+          <Button onClick={() => router.push("/sign-in")} className="cursor-pointer gap-2">
+            <LogIn className="h-4 w-4" />
+            Sign in or Create Account
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const initials = user.name ? user.name.substring(0, 2).toUpperCase() : "U";
   const avatarUrl = user.image || `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(user.name || user.email)}&radius=10`;
 
@@ -528,7 +593,7 @@ export default function SettingsComponent() {
   ] as const;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background rounded-xl overflow-hidden w-full">
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">

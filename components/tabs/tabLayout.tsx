@@ -5,7 +5,7 @@ import { useTabSync } from '@/hooks/useTabsync';
 import { TabBar } from './TabBar';
 import { TabContent } from './tabContent';
 import { parseTabFromUrl } from '@/hooks/useTabNavigation';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface TabLayoutProps {
   children: React.ReactNode;
@@ -21,9 +21,15 @@ export function TabLayout({ children }: TabLayoutProps) {
 
   const tabs = useTabStore((s) => s.tabs);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Build the full URL for parsing (pathname + search params)
+  const fullUrl = searchParams.toString()
+    ? `${pathname}?${searchParams.toString()}`
+    : pathname;
 
   // Check if current URL is a tab-compatible route
-  const isTabRoute = parseTabFromUrl(pathname) !== null;
+  const isTabRoute = parseTabFromUrl(fullUrl) !== null;
 
   // Only show tab UI when we're on a tab-compatible route AND tabs exist.
   // When the user navigates to /home, /Ai — always show

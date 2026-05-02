@@ -99,27 +99,27 @@ export function MermaidDiagram() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 mr-2">
-            <Button variant="ghost" size="icon" onClick={handleZoomOut}>
+          <div className="flex items-center gap-1 ">
+            <Button variant="ghost" className="cursor-pointer" size="icon" onClick={handleZoomOut}>
               <ZoomOut className="h-4 w-4" />
             </Button>
             <span className="text-xs text-muted-foreground min-w-12 text-center hidden md:inline">
               {zoom}%
             </span>
-            <Button variant="ghost" size="icon" onClick={handleZoomIn}>
+            <Button variant="ghost" className="cursor-pointer" size="icon" onClick={handleZoomIn}>
               <ZoomIn className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={handleResetZoom}
-              className="hidden md:inline"
+              className=" cursor-pointer"
             >
               <Maximize2 className="h-4 w-4" />
             </Button>
           </div>
 
-          <Button variant="ghost" size="sm" onClick={handleCopy}>
+          <Button variant="ghost" className="cursor-pointer" size="sm" onClick={handleCopy}>
             {copied ? (
               <Check className="h-4 w-4 mr-2" />
             ) : (
@@ -131,12 +131,12 @@ export function MermaidDiagram() {
             </span>
           </Button>
 
-          <Button variant="ghost" size="sm" onClick={handleExport}>
+          <Button variant="ghost" className="cursor-pointer" size="sm" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
             <span className="hidden md:inline"> Export SVG</span>
           </Button>
           <Button
-            variant="ghost"
+            variant="ghost" className="cursor-pointer"
             size="sm"
             onClick={() => setCanvasOpen(false)}
           >
