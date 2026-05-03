@@ -77,3 +77,12 @@ export const settingsapi = {
   updateSettings: (data: { systemPrompt?: string | null }) =>
     apiClient.put<UserSettings>('/api/settings', data).then(r => r.data),
 }
+
+export const aiapi = {
+  generateQuizzes: (data: { topic: string, numQuestions: number, noteContent?: string }) =>
+    apiClient.post<any>('/api/ai/generate-quizzes', data).then(r => r.data),
+  generateFlashcards: (data: { topic: string, numFlashcards: number, noteContent?: string }) =>
+    apiClient.post<any>('/api/ai/generate-flashcards', data).then(r => r.data),
+  gradeFlashcard: (data: { userAnswer: string, correctAnswer: string, question: string }) =>
+    apiClient.post<any>('/api/ai/grade-flashcard', data).then(r => r.data),
+}

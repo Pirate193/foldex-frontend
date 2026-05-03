@@ -112,7 +112,7 @@ export function DndSidebarProvider({
       }
 
       const overData = over.data.current as { type: string; id: string } | undefined;
-      if (!overData || overData.type !== "folder") {
+      if (!overData || (overData.type !== "folder" && overData.type !== "root-zone")) {
         setOverId(null);
         return;
       }

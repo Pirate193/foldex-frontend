@@ -32,6 +32,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { isDesktopApp } from "@/lib/isdesktop";
+import { getApiKeysMeta } from "@/lib/services/localapikeys";
+import { settingsapi } from "@/lib/api";
+import { generateQuizzesAction, gradeFlashcardAnswer } from "@/lib/ai/unified-ai";
 
 // --- MAIN BLOCK DEFINITION ---
 export const QuizBlock = createReactBlockSpec(
@@ -81,19 +85,36 @@ export const QuizBlock = createReactBlockSpec(
             .join("\n");
 
           const count = parseInt(numQuestions);
-          // const data = await generateQuizzesAction(
-          //   topicInput,
-          //   count,
-          //   noteContent
-          // );
+          
+          let hasKeys = false;
+          if (isDesktopApp()) {
+              const keys = await getApiKeysMeta();
+              hasKeys = keys.some(k => k.isValid);
+          } else {
+              const keys = await settingsapi.getKeys();
+              hasKeys = keys.length > 0;
+          }
 
-          // props.editor.updateBlock(props.block, {
-          //   props: {
-          //     topic: topicInput,
-          //     quizzesData: JSON.stringify(data),
-          //     isGeneratingInitial: false,
-          //   },
-          // });
+          if (!hasKeys) {
+              toast.error("Please configure an AI provider in Settings to use this feature.");
+              setIsLoading(false);
+              return;
+          }
+
+          const data = await generateQuizzesAction(
+            topicInput,
+            count,
+            noteContent
+          );
+
+          props.editor.updateBlock(props.block, {
+            props: {
+              topic: topicInput,
+              quizzesData: JSON.stringify(data),
+              isGeneratingInitial: false,
+            },
+          });
+          toast.success("Quizzes generated successfully");
           setIsOpen(false);
         } catch (e) {
           console.error("Failed to generate quizzes:", e);
@@ -302,14 +323,14 @@ const QuizCard = ({
     if (!frqAnswer.trim()) return;
     setStatus("grading");
     try {
-      // Call the Server Action
-      // const result = await gradeFlashcardAnswer(
-      //   frqAnswer,
-      //   quizData.correctAnswers[0],
-      //   quizData.question
-      // );
-      // setAiFeedback(result);
-      // setStatus(result.isCorrect ? "correct" : "incorrect");
+      // Call the unified action
+      const result = await gradeFlashcardAnswer(
+        frqAnswer,
+        quizData.correctAnswers[0],
+        quizData.question
+      );
+      setAiFeedback(result);
+      setStatus(result.isCorrect ? "correct" : "incorrect");
     } catch (e) {
       console.error(e);
       setStatus("idle"); // Reset on error

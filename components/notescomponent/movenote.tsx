@@ -67,15 +67,15 @@ const MoveNote = ({ open, onOpenChange, noteId, folderId }: MoveNoteProps) => {
       }
       await moveNote({
         id: noteId,
-        folderId: selectedFolderId,
+        folderId: selectedFolderId === "root" ? null : selectedFolderId,
       });
       onOpenChange(false);
       setSelectedFolderId(null);
       setSearchQuery("");
-      toast.success("Folder moved successfully");
+      toast.success("Note moved successfully");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to move folder");
+      toast.error("Failed to move note");
     } 
   };
   const handleCancel = () => {
@@ -134,6 +134,23 @@ const MoveNote = ({ open, onOpenChange, noteId, folderId }: MoveNoteProps) => {
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2">
                   Personal
                 </div>
+                {/* Workspace Root */}
+                {(!searchQuery || "workspace root".includes(searchQuery.toLowerCase())) && folderId && (
+                  <button
+                    onClick={() => setSelectedFolderId("root")}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
+                      selectedFolderId === "root"
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted/50"
+                    }`}
+                  >
+                    <NotebookIcon className="w-4 h-4 ml-6" />
+                    <span className="flex-1">Workspace Root</span>
+                    {selectedFolderId === "root" && (
+                      <Check className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
                 {/* Root Folders */}
                 {groupedFolders.rootFolders.map((f) => (
                   <button

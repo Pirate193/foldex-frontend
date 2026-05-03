@@ -151,7 +151,7 @@ export function ResizableSidebarLayout({
             {children}
           </TabLayout>
         </Suspense>
-        <Toaster />
+        
       </SidebarInset>
     </SidebarProvider>
   );

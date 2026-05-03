@@ -23,6 +23,10 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import { isDesktopApp } from "@/lib/isdesktop";
+import { getApiKeysMeta } from "@/lib/services/localapikeys";
+import { settingsapi } from "@/lib/api";
+import { generateFlashcardsAction } from "@/lib/ai/unified-ai";
 
 export const flashcardblock = createReactBlockSpec(
   {
@@ -75,19 +79,37 @@ export const flashcardblock = createReactBlockSpec(
             .join("\n");
 
           const count = parseInt(numberOfFlashcards);
-          // const data = await generateFlashcardsAction(
-          //   topic,
-          //   count,
-          //   noteContent
-          // );
+          
+          // Check for API keys
+          let hasKeys = false;
+          if (isDesktopApp()) {
+              const keys = await getApiKeysMeta();
+              hasKeys = keys.some(k => k.isValid);
+          } else {
+              const keys = await settingsapi.getKeys();
+              hasKeys = keys.length > 0;
+          }
 
-          // props.editor.updateBlock(props.block, {
-          //   props: {
-          //     topic: topic,
-          //     flashcardData: JSON.stringify(data),
-          //     isGeneratingInitial: false,
-          //   },
-          // });
+          if (!hasKeys) {
+              toast.error("Please configure an AI provider in Settings to use this feature.");
+              setIsLoading(false);
+              return;
+          }
+
+          const data = await generateFlashcardsAction(
+            topic,
+            count,
+            noteContent
+          );
+
+          props.editor.updateBlock(props.block, {
+            props: {
+              topic: topic,
+              flashcardData: JSON.stringify(data),
+              isGeneratingInitial: false,
+            },
+          });
+          toast.success("Flashcards generated successfully"); 
           setIsOpen(false);
         } catch (error) {
           console.log(error);

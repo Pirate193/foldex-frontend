@@ -14,6 +14,29 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/colla
 import { Button } from "../ui/button"
 import { FOLDER_COLORS } from "@/lib/foldercolor"
 import { useSession } from "@/hooks/use-auth"
+import { useDroppable } from "@dnd-kit/core"
+import { cn } from "@/lib/utils"
+
+const RootDropZone = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+    const { setNodeRef, isOver } = useDroppable({
+        id: "root-zone",
+        data: {
+            type: "root-zone",
+            id: "root-zone",
+        }
+    });
+
+    return (
+        <div 
+            ref={setNodeRef}
+            className={cn(className, isOver && "bg-accent/50 rounded-md border-2 border-dashed border-primary/50")}
+            data-type="root-zone"
+            id="root-zone"
+        >
+            {children}
+        </div>
+    );
+};
 
 type SortOption = "A-Z" | "Z-A" | "Newest" | "Oldest";
 
@@ -205,11 +228,7 @@ export const NavContent = () => {
                                 </div>
                                 <SidebarGroupContent>
                                     {/* Droppable root zone for dragging folders/notes to root */}
-                                    <div 
-                                        className="min-h-1" 
-                                        data-type="root-zone"
-                                        id="root-zone"
-                                    >
+                                    <RootDropZone className="min-h-[100px] pb-4 flex flex-col h-full">
                                         {combinedRoots.map((item) => {
                                             if (item._type === "folder") {
                                                 return (
@@ -236,7 +255,7 @@ export const NavContent = () => {
                                                 No results found for "{searchQuery}".
                                             </div>
                                         )}
-                                    </div>
+                                    </RootDropZone>
                                 </SidebarGroupContent>
                             </SidebarGroup>
                         </div>

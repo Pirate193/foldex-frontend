@@ -40,10 +40,6 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
   async function saveUserLocally(user: { id: string; name: string; email: string; image?: string | null }) {
     // Always persist userId to localStorage so getUserId() works everywhere
     localStorage.setItem("pslmp_user_id", user.id);
-
-    if (isDesktopApp()) {
-      await syncLocalToCloud(user);
-    }
   }
 
   // Step 1 — Send OTP to email
