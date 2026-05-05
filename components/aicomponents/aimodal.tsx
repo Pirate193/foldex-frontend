@@ -66,17 +66,21 @@ import { PromptTipTapEditor } from "./aitextarea";
 import { SuggestionItem } from "./suggestion-list";
 import { useFolders } from "@/hooks/use-folders";
 import { useNotes } from "@/hooks/use-notes";
+import { ParsedAttachment, useFileParser } from "@/hooks/use-file-parser";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "development" 
     ? "http://localhost:3000" 
     : "https://api.pslmp.foldex.space"}/api/ai/chat`;
 
-const PromptInputAttachmentsDisplay = () => {
+const PromptInputAttachmentsDisplay = ({ 
+  parseStates, 
+  onRemoveParsed // <-- Add this prop
+}: { 
+  parseStates: Map<string, ParsedAttachment>,
+  onRemoveParsed: (id: string) => void 
+}) => {
   const attachments = usePromptInputAttachments();
-
-  if (attachments.files.length === 0) {
-    return null;
-  }
+  if (attachments.files.length === 0) return null;
 
   return (
     <Attachments variant="inline">
@@ -84,7 +88,11 @@ const PromptInputAttachmentsDisplay = () => {
         <Attachment
           data={attachment}
           key={attachment.id}
-          onRemove={() => attachments.remove(attachment.id)}
+          parseState={parseStates.get(attachment.id)} 
+          onRemove={() => {
+            attachments.remove(attachment.id); // Removes from UI
+            onRemoveParsed(attachment.id);     // Removes from your custom hook's Map!
+          }}
         >
           <AttachmentPreview />
           <AttachmentRemove />
@@ -94,9 +102,27 @@ const PromptInputAttachmentsDisplay = () => {
   );
 };
 
+const BackgroundParserWatcher = ({ parse }: { parse: any }) => {
+  // Now this hook is safely INSIDE the provider!
+  const attachments = usePromptInputAttachments();
+  const prevIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    attachments.files.forEach((filePart) => {
+      if (!prevIdsRef.current.has(filePart.id) && filePart.type === "file") {
+        prevIdsRef.current.add(filePart.id);
+        parse(filePart.id, filePart); // starts immediately on add
+      }
+    });
+  }, [attachments.files, parse]);
+
+  return null; // It renders nothing visually!
+};
+
 const AiModalComponent = () => {
   const {activeChatId,setActiveChatId,context,isOpen,onClose,onOpen}=useAiStore();
   const [text, setText] = useState<string>("");
+  const containerRef = useRef<HTMLDivElement>(null);
   const [useWebSearch, setUseWebSearch] = useState<boolean>(false);
   const {data:initialMessages,isLoading:isLoadingInitialMessages}=useChatMessages(activeChatId!);
   const {mutateAsync:addMessage,isPending:isPendingAddMessage}=useAddMessage();
@@ -119,6 +145,7 @@ const AiModalComponent = () => {
   const [model, setModel] = useState<string>("");
   const selectedModel = model || (availableModels.length > 0 ? availableModels[0].model.id : "");
   const isOnline = useOnlineStatus();
+  const { state: parseStates, parse, remove: removeParsed,hasErrors, isParsing, buildContext } = useFileParser();
 
   const pendingMessageProcessedRef = useRef(false);
   const [hasProcessedPendingMessage, setHasProcessedPendingMessage] =
@@ -247,10 +274,12 @@ const AiModalComponent = () => {
       console.error("Failed to save user message:", error);
     }
 
+    const parsedFileContext = buildContext();
+    
     sendMessage(
       {
-        text: message.text || "Sent with attachments",
-        files: message.files,
+        text: message.text,
+        files: [],
       },
       {
         body: {
@@ -258,6 +287,7 @@ const AiModalComponent = () => {
           webSearch: useWebSearch,
           contextFolder:contextFolder,
           contextNote:contextNote,
+          filecontext:parsedFileContext
         },
       }
     );
@@ -273,10 +303,11 @@ const AiModalComponent = () => {
       ) {
         console.log("Sending pending message from store:", pendingMessage);
         pendingMessageProcessedRef.current = true;
+        const parsedFileContext = buildContext();
         sendMessage(
           {
             text: pendingMessage.text || "",
-            files: pendingMessage.files,
+            files: [],
           },
           {
             body: {
@@ -284,6 +315,7 @@ const AiModalComponent = () => {
               model: selectedModel,
               contextFolder:contextFolder,
               contextNote:contextNote,
+              filecontext:parsedFileContext
             },
           },
         );
@@ -329,7 +361,7 @@ const AiModalComponent = () => {
       ]
   return (
     
-      <div className="flex flex-col h-full p-2">
+      <div ref={containerRef} className="flex flex-col h-full p-2">
         <div className="flex gap-3 items-center justify-between">
         <ChatHistoryModalPopover />
          <Button variant="ghost" className="cursor-pointer" onClick={() => onClose()}>
@@ -544,7 +576,7 @@ const AiModalComponent = () => {
         </Conversation>
 
         <PromptInputProvider>
-
+          <BackgroundParserWatcher parse={parse} />
         <PromptInput
           onSubmit={handleSubmit}
           className="mt-4"
@@ -552,15 +584,16 @@ const AiModalComponent = () => {
           multiple
         >
           <PromptInputHeader>
-            <PromptInputAttachmentsDisplay />
+            <PromptInputAttachmentsDisplay parseStates={parseStates} onRemoveParsed={removeParsed} />
           </PromptInputHeader>
           <PromptInputBody>
             <PromptTipTapEditor
                              mentionItems={mentionItems}
                              promptItems={promptItems}
                              onMentionsChange={handleMentionsChange}
+                             onUpdate={(newtext)=>setText(newtext)}
                              onSubmit={(_text, currentMentions) => {
-                               const form = document.querySelector('.tiptap')?.closest('form') as HTMLFormElement
+                               const form = containerRef.current?.querySelector('.tiptap')?.closest('form') as HTMLFormElement
                                if (form && typeof form.requestSubmit === 'function') {
                                  form.requestSubmit()
                                }
@@ -597,7 +630,7 @@ const AiModalComponent = () => {
                   onValueChange={(value) => setModel(value)}
                   value={selectedModel}
                 >
-                  <PromptInputSelectTrigger>
+                  <PromptInputSelectTrigger className="cursor-pointer">
                     <PromptInputSelectValue className="cursor-pointer" />
                   </PromptInputSelectTrigger>
                   <PromptInputSelectContent>
@@ -615,7 +648,7 @@ const AiModalComponent = () => {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text || !status) || !selectedModel || !isOnline} status={status} />
+            <PromptInputSubmit disabled={(!text || !status) || isParsing || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
         </PromptInputProvider>

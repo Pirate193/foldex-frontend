@@ -30,7 +30,7 @@ import {
   PromptInputProvider,
 } from "@/components/ai-elements/prompt-input";
 import { GlobeIcon } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { Suggestion, Suggestions } from "../ai-elements/suggestion";
@@ -47,15 +47,19 @@ import { useFolders } from "@/hooks/use-folders";
 import { useNotes } from "@/hooks/use-notes";
 import { SuggestionItem } from "./suggestion-list";
 import { PromptTipTapEditor } from "./aitextarea";
+import { ParsedAttachment, useFileParser } from "@/hooks/use-file-parser";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslmp.foldex.space" : "http://localhost:3000"}/api/ai/chat`;
 
-const PromptInputAttachmentsDisplay = () => {
+const PromptInputAttachmentsDisplay = ({ 
+  parseStates, 
+  onRemoveParsed // <-- Add this prop
+}: { 
+  parseStates: Map<string, ParsedAttachment>,
+  onRemoveParsed: (id: string) => void 
+}) => {
   const attachments = usePromptInputAttachments();
-
-  if (attachments.files.length === 0) {
-    return null;
-  }
+  if (attachments.files.length === 0) return null;
 
   return (
     <Attachments variant="inline">
@@ -63,7 +67,11 @@ const PromptInputAttachmentsDisplay = () => {
         <Attachment
           data={attachment}
           key={attachment.id}
-          onRemove={() => attachments.remove(attachment.id)}
+          parseState={parseStates.get(attachment.id)} 
+          onRemove={() => {
+            attachments.remove(attachment.id); // Removes from UI
+            onRemoveParsed(attachment.id);     // Removes from your custom hook's Map!
+          }}
         >
           <AttachmentPreview />
           <AttachmentRemove />
@@ -71,6 +79,23 @@ const PromptInputAttachmentsDisplay = () => {
       ))}
     </Attachments>
   );
+};
+
+const BackgroundParserWatcher = ({ parse }: { parse: any }) => {
+  // Now this hook is safely INSIDE the provider!
+  const attachments = usePromptInputAttachments();
+  const prevIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    attachments.files.forEach((filePart) => {
+      if (!prevIdsRef.current.has(filePart.id) && filePart.type === "file") {
+        prevIdsRef.current.add(filePart.id);
+        parse(filePart.id, filePart); // starts immediately on add
+      }
+    });
+  }, [attachments.files, parse]);
+
+  return null; // It renders nothing visually!
 };
 
 const suggestions = [
@@ -92,6 +117,7 @@ export default function NewChatComponent() {
   const [contextNote, setContextNote] = useState<{id:string,title: string}[]>([]);
   const {data:allFolders}=useFolders();
   const {data:allNotes}=useNotes();
+  const { state: parseStates, parse, remove: removeParsed,hasErrors, isParsing, buildContext } = useFileParser();
   
 
   // Dynamic models from configured API keys
@@ -173,6 +199,8 @@ export default function NewChatComponent() {
       return;
     }
 
+    const parsedFileContext = buildContext();
+    
      try {
       const title =
         message.text.slice(0, 50) + (message.text.length > 50 ? "..." : "");
@@ -185,6 +213,7 @@ export default function NewChatComponent() {
         model:selectedModel,
         contextFolder:contextFolder,
         contextNote:contextNote,
+        filecontext:parsedFileContext
       });
 
       router.push(`/app?view=chat&id=${chat.id}`);
@@ -227,6 +256,7 @@ export default function NewChatComponent() {
       promptText: "Act as an expert tutor. Based on this material, generate 5 challenging multiple-choice questions to test my understanding. Do not provide the answers until I respond."
     }
   ]
+  
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
       {/* header */}
@@ -255,6 +285,7 @@ export default function NewChatComponent() {
         )}
 
       <PromptInputProvider>
+        <BackgroundParserWatcher parse={parse} />
         <PromptInput
           onSubmit={handleSubmit}
           className="mt-4"
@@ -262,13 +293,14 @@ export default function NewChatComponent() {
           multiple
         >
           <PromptInputHeader>
-            <PromptInputAttachmentsDisplay />
+            <PromptInputAttachmentsDisplay parseStates={parseStates} onRemoveParsed={removeParsed} />
           </PromptInputHeader>
           <PromptInputBody>
             <PromptTipTapEditor
                  mentionItems={mentionItems}
                  promptItems={promptItems}
                  onMentionsChange={handleMentionsChange}
+                 onUpdate={(newtext)=>setText(newtext)}
                  onSubmit={(_text, currentMentions) => {
                    const form = document.querySelector('.tiptap')?.closest('form') as HTMLFormElement
                    if (form && typeof form.requestSubmit === 'function') {
@@ -325,7 +357,7 @@ export default function NewChatComponent() {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
+            <PromptInputSubmit disabled={ !text || isParsing || hasErrors || !status || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
         </PromptInputProvider>

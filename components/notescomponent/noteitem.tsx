@@ -86,7 +86,7 @@ const NoteItem = ({ title, folderId, noteId, isActive }: NoteItemProps) => {
       <div
         ref={setNodeRef}
         className={cn(
-          "group/item mt-1 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50 w-full overflow-hidden",
+          "group/item  flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50 w-full overflow-hidden",
           isActive && "bg-primary/10 dark:bg-primary/10 font-medium text-foreground",
           isDragging && "cursor-grabbing opacity-40",
         )}

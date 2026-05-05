@@ -46,6 +46,7 @@ import { useTabNavigation } from "@/hooks/useTabNavigation";
 import { useDeleteNote, useNote } from "@/hooks/use-notes";
 import { useFolder } from "@/hooks/use-folders";
 import { useAiStore } from "@/stores/aistore";
+import { isDesktopApp } from "@/lib/isdesktop";
 
 
 interface Props {
@@ -105,45 +106,91 @@ const Notesheader = ({ noteId, folderId }: Props) => {
     }
   };
 
-  // --- FIX: This is the new Export function ---
+  // --- NATIVE DESKTOP MARKDOWN EXPORT ---
   const handleExportAsMarkdown = async () => {
     if (!note.content) return;
     try {
-      // 1. Await the async conversion
       const markdown = await blockNoteToMarkdown(note.content);
+      const cleanFilename = `${note.title.replace(/ /g, "_")}.md`;
 
-      // 2. Create a Blob (a file in memory)
-      const blob = new Blob([markdown], {
-        type: "text/markdown;charset=utf-8",
-      });
+      if (isDesktopApp()) {
+        // Dynamically import Tauri plugins so Web doesn't crash
+        const { save } = await import('@tauri-apps/plugin-dialog');
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        const { sendNotification } = await import('@tauri-apps/plugin-notification');
 
-      // 3. Create a temporary URL for the Blob
-      const url = URL.createObjectURL(blob);
+        // 1. Open the native OS "Save As" window
+        const filePath = await save({
+          defaultPath: cleanFilename,
+          filters: [{ name: 'Markdown Document', extensions: ['md'] }]
+        });
 
-      // 4. Create a hidden <a> element to trigger the download
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${note.title.replace(/ /g, "_")}.md`; // Create a clean filename
-
-      // 5. Simulate a click to download the file
-      document.body.appendChild(a); // Add link to the page
-      a.click(); // Click the link
-
-      // 6. Clean up
-      document.body.removeChild(a); // Remove the link
-      URL.revokeObjectURL(url); // Free up memory
-
-      toast.success("Note exported as Markdown");
+        // 2. If the user didn't click Cancel
+        if (filePath) {
+          await writeTextFile(filePath, markdown);
+          
+          // 3. Native Windows/Mac push notification!
+          sendNotification({
+            title: 'psLMP',
+            body: `Note successfully exported to ${filePath}`
+          });
+          toast.success("Saved to your computer");
+        }
+      } else {
+        // Fallback: Standard Web Browser Download
+        const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = cleanFilename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success("Note exported as Markdown");
+      }
     } catch (error) {
       console.error("Failed to export note:", error);
       toast.error("Failed to export note.");
     }
   };
+
+  // --- NATIVE DESKTOP PDF EXPORT ---
   const handleExportAsPDF = async () => {
     if (!note.content) return;
     try {
-      await exportNoteToPDF(note.title, note.content);
-      toast.success("Note exported as PDF");
+      if (isDesktopApp()) {
+        const { save } = await import('@tauri-apps/plugin-dialog');
+        const { writeFile } = await import('@tauri-apps/plugin-fs');
+        const { sendNotification } = await import('@tauri-apps/plugin-notification');
+
+        const cleanFilename = `${note.title.replace(/ /g, "_")}.pdf`;
+        
+        // 1. Open native OS "Save As" window
+        const filePath = await save({
+          defaultPath: cleanFilename,
+          filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+        });
+
+        // 2. If they picked a location
+        if (filePath) {
+          // Tell our PDF generator to return raw bytes instead of auto-downloading
+          const pdfBytes = await exportNoteToPDF(note.title, note.content,true ) as ArrayBuffer;
+          
+          await writeFile(filePath, new Uint8Array(pdfBytes));
+          
+          // 3. Fire the native notification
+          sendNotification({
+            title: 'psLMP',
+            body: `PDF successfully exported to ${filePath}`
+          });
+          toast.success("Saved to your computer");
+        }
+      } else {
+        // Fallback: Web browser handles the jsPDF save automatically
+        await exportNoteToPDF(note.title, note.content);
+        toast.success("Note exported as PDF");
+      }
     } catch (error) {
       console.error("Failed to export PDF:", error);
       toast.error("Failed to export PDF.");
@@ -155,7 +202,7 @@ const Notesheader = ({ noteId, folderId }: Props) => {
         {/*breadcrumb  */}
         <div>
           <div className="flex items-center gap-2  ">
-            <SidebarTrigger />
+            <SidebarTrigger className="cursor-pointer"/>
             <Breadcrumb>
               <BreadcrumbList>
                 {folder && <BreadcrumbItem className="hidden md:inline-flex">

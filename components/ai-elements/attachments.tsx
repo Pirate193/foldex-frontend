@@ -6,12 +6,16 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { ParsedAttachment } from "@/hooks/use-file-parser";
 import { cn } from "@/lib/utils";
 import type { FileUIPart, SourceDocumentUIPart } from "ai";
 import {
+  AlertCircle,
+  CheckCircle2,
   FileTextIcon,
   GlobeIcon,
   ImageIcon,
+  Loader2,
   Music2Icon,
   PaperclipIcon,
   VideoIcon,
@@ -19,6 +23,7 @@ import {
 } from "lucide-react";
 import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
 import { createContext, useCallback, useContext, useMemo } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 // ============================================================================
 // Types
@@ -182,11 +187,13 @@ export const Attachments = ({
 export type AttachmentProps = HTMLAttributes<HTMLDivElement> & {
   data: AttachmentData;
   onRemove?: () => void;
+  parseState?: ParsedAttachment;
 };
 
 export const Attachment = ({
   data,
   onRemove,
+  parseState,
   className,
   children,
   ...props
@@ -220,6 +227,36 @@ export const Attachment = ({
         {...props}
       >
         {children}
+      {parseState && (
+        <div className={cn(
+             "flex items-center justify-center rounded-lg",
+             parseState.status === "parsing" && "bg-black/20",
+             parseState.status === "error" && "bg-red-500/20",
+        )}>
+      {parseState.status === "parsing" && (
+      <div className="flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+        Parsing...
+      </div>
+    )}
+    {parseState.status === "done" && (
+      <div className="flex items-center gap-1 rounded bg-green-700/80 px-1.5 py-0.5 text-[10px] text-white">
+        <CheckCircle2 className="h-2.5 w-2.5" />
+        {"Ready"}
+      </div>
+    )}
+    {parseState.status === "error" && (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-1 rounded bg-red-700/80 px-1.5 py-0.5 text-[10px] text-white cursor-help">
+            <AlertCircle className="h-2.5 w-2.5" />
+            Failed
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{parseState.error}</TooltipContent>
+      </Tooltip>
+    )}
+      </div>)}
       </div>
     </AttachmentContext.Provider>
   );
@@ -347,7 +384,7 @@ export const AttachmentRemove = ({
           "[&>svg]:size-3",
         ],
         variant === "inline" && [
-          "size-5 rounded p-0",
+          "size-5 rounded p-0 cursor-pointer",
           "opacity-0 transition-opacity group-hover:opacity-100",
           "[&>svg]:size-2.5",
         ],

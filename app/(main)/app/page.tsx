@@ -26,17 +26,18 @@ function MasterAppView() {
   return <HomeComponent />;
 }
 
+let hasTriggeredSync = false;
 export default function AppMasterPage() {
   const { data: session } = useSession();
-  const hasSynced = useRef(false);
+  
 
   // The Background Sync Hook
   useEffect(() => {
     // 1. Check if we are on desktop
     // 2. Check if the user is actually logged in
     // 3. Check if we haven't already synced during this app session
-    if (isDesktopApp() && session?.user && !hasSynced.current) {
-      hasSynced.current = true; // Lock it instantly!
+    if (isDesktopApp() && session?.user && !hasTriggeredSync) {
+      hasTriggeredSync = true; // Lock it instantly!
       
       console.log("App booted: Triggering background cloud sync...");
       

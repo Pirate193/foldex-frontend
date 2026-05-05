@@ -44,7 +44,7 @@ export default function CallToAction() {
 
             {/* Micro-copy for Trust */}
             <p className="pt-4 text-sm text-muted-foreground">
-              No credit card required • Free plan available forever
+              No credit card required • Free forever
             </p>
           </div>
         </div>

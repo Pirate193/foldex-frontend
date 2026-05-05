@@ -10,6 +10,11 @@
     "sql:default",
     "sql:allow-execute",
     "sql:allow-load",
-    "stronghold:default"
+    "stronghold:default",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-write-file",
+    "fs:allow-write-text-file",
+    "notification:default"
   ]
 }

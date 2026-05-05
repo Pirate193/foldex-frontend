@@ -145,8 +145,8 @@ export function TabBar() {
                   <button
                     onClick={(e) => handleClose(e, tab.id)}
                     className={cn(
-                      'shrink-0 rounded-sm p-0.5 hover:bg-accent transition-colors',
-                      'opacity-0 group-hover:opacity-100',
+                      'shrink-0 rounded-sm p-0.5 hover:bg-destructive transition-colors',
+                      'opacity-0 group-hover:opacity-100 cursor-pointer',
                       isActive && 'opacity-60'
                     )}
                   >

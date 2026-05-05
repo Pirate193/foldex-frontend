@@ -40,7 +40,7 @@ export default function HeroSection() {
                     <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
                 </div>
                 <section>
-                    <div className="relative pt-24 md:pt-36">
+                    <div className="relative pt-12 md:pt-24">
                         <AnimatedGroup
                             variants={{
                                 container: {
@@ -107,8 +107,8 @@ export default function HeroSection() {
                                     preset="fade-in-blur"
                                     speedSegment={0.3}
                                     as="h1"
-                                    className="mx-auto mt-8 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-16 xl:text-[5.25rem]">
-                                    Your Open-Source, Offline-First Second Brain
+                                    className="mx-auto mt-4 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-8 xl:text-[5.25rem]">
+                                    The Open-Source Alternative to Notion
                                 </TextEffect>
                                 <TextEffect
                                     per="line"
@@ -116,7 +116,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     delay={0.5}
                                     as="p"
-                                    className="mx-auto mt-8 max-w-2xl text-balance text-lg">
+                                    className="mx-auto mt-4 max-w-2xl text-balance text-lg">
                                     A powerful desktop application built with custom blocks, local-first architecture, and bring-your-own AI models. Completely free and open-source.
                                 </TextEffect>
 
@@ -140,7 +140,7 @@ export default function HeroSection() {
                                             asChild
                                             size="lg"
                                             className="rounded-xl px-5 text-base">
-                                            <Link href="#link">
+                                            <Link href="https://github.com/Pirate193/pslmp-frontend/releases/download/v1.0.0-beta.1/pslmp_0.1.0_x64-setup.exe">
                                                 <span className="text-nowrap">Download Desktop App</span>
                                             </Link>
                                         </Button>
@@ -151,7 +151,7 @@ export default function HeroSection() {
                                         size="lg"
                                         variant="ghost"
                                         className="h-10.5 rounded-xl px-5">
-                                        <Link href="#link">
+                                        <Link href="https://github.com/Pirate193/pslmp-frontend.git">
                                             <span className="text-nowrap">View on GitHub</span>
                                         </Link>
                                     </Button>

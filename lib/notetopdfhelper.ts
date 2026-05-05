@@ -15,6 +15,7 @@ interface PDFOptions {
   margin?: number;
   includeHeader?: boolean;
   includeFooter?: boolean;
+  returnBuffer?: boolean;
 }
 
 /**
@@ -24,7 +25,7 @@ export async function exportBlockNoteToPDF(
   noteTitle: string,
   blocks: BlockNoteContent,
   options: PDFOptions = {}
-): Promise<void> {
+): Promise<ArrayBuffer |void> {
   const {
     fontSize = 11,
     lineHeight = 7,
@@ -137,6 +138,10 @@ export async function exportBlockNoteToPDF(
       }
     }
 
+    if (options.returnBuffer) {
+      return doc.output('arraybuffer');
+    }
+
     // Save the PDF
     const filename = `${noteTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
     doc.save(filename);
@@ -163,7 +168,7 @@ function estimateBlockHeight(block: BlockNoteBlock, lineHeight: number): number 
     case 'quiz':
       try {
         const quizzesData = JSON.parse(block.props.quizzesData || '[]');
-        return quizzesData.length * 40 + 20;
+        return quizzesData.length * 65 + 20;
       } catch {
         return 30;
       }
@@ -231,10 +236,10 @@ async function formatBlock(
       
       lines.forEach((line: string) => {
         doc.text(line, margin, currentY);
-        currentY += lineHeight + 2;
+        currentY += headingSize * 0.4; // 👉 TIGHTER line height for headings
       });
       
-      currentY += 3; // Extra space after heading
+      currentY += 2; // 👉 Less gap before the paragraph starts
       break;
     }
 
@@ -314,12 +319,19 @@ async function formatBlock(
       break;
     }
 
-    case 'codeBlock': {
-      const code = extractTextContent(block.content);
-      const language = block.props.language || 'code';
-      const lines = code.split('\n');
-      const requiredHeight = (lines.length + 2) * (lineHeight - 1) + 10;
+    case 'codeBlock':
+    case 'mermaid': {
+      const code = block.type === 'mermaid' ? (block.props.mermaidCode || '') : extractTextContent(block.content);
+      const language = block.type === 'mermaid' ? 'mermaid' : (block.props.language || 'code');
       
+      // Wrap long lines instead of truncating them!
+      let wrappedLines: string[] = [];
+      code.split('\n').forEach((line:any) => {
+         const split = doc.splitTextToSize(line, contentWidth - 6);
+         wrappedLines.push(...split);
+      });
+
+      const requiredHeight = (wrappedLines.length + 2) * (lineHeight - 1) + 10;
       checkSpace(requiredHeight);
       
       // Background box
@@ -337,10 +349,8 @@ async function formatBlock(
       doc.setFontSize(9);
       doc.setTextColor(0);
       
-      lines.forEach((line) => {
-        // Truncate long lines
-        const truncated = line.length > 90 ? line.substring(0, 90) + '...' : line;
-        doc.text(truncated, margin + 3, currentY);
+      wrappedLines.forEach((line) => {
+        doc.text(line, margin + 3, currentY);
         currentY += lineHeight - 1;
       });
       
@@ -430,11 +440,16 @@ async function formatBlock(
       
       // Questions
       quizzesData.forEach((quiz: any, idx: number) => {
+        // Ensure we don't page break in the middle of a question
+        checkSpace(40);
+
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(fontSize);
         doc.setTextColor(0, 0, 0);
         
-        const questionText = `Q${idx + 1}: ${quiz.question || 'No question'}`;
+        // Include difficulty if available
+        const difficulty = quiz.difficulty ? ` [${quiz.difficulty}]` : '';
+        const questionText = `Q${idx + 1}${difficulty}: ${quiz.question || 'No question'}`;
         const questionLines = doc.splitTextToSize(questionText, contentWidth - 6);
         
         questionLines.forEach((line: string) => {
@@ -442,29 +457,64 @@ async function formatBlock(
           currentY += lineHeight;
         });
         
-        // Options
-        if (quiz.options && Array.isArray(quiz.options)) {
+        // Handle FRQ (Free Response) differently than Multiple Choice
+        if (quiz.type === 'frq') {
+           doc.setFont('helvetica', 'bold');
+           doc.setFontSize(9);
+           doc.setTextColor(0, 120, 0); // Dark Green
+           
+           const ansText = `Answer: ${quiz.correctAnswers?.[0] || 'See explanation'}`;
+           const ansLines = doc.splitTextToSize(ansText, contentWidth - 12);
+           ansLines.forEach((line: string) => {
+             doc.text(line, margin + 6, currentY);
+             currentY += lineHeight - 1;
+           });
+        } 
+        // Handle Single/Multiple Choice Options
+        else if (quiz.options && Array.isArray(quiz.options)) {
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
           
           quiz.options.forEach((option: string) => {
             const isCorrect = quiz.correctAnswers && quiz.correctAnswers.includes(option);
-            const prefix = isCorrect ? '✓' : '○';
+            
+            // CRITICAL FIX: Use standard ASCII characters instead of Unicode ✓/○
+            const prefix = isCorrect ? '[X]' : '[  ]';
             
             if (isCorrect) {
-              doc.setTextColor(0, 150, 0);
+              doc.setTextColor(0, 120, 0); // Dark Green
               doc.setFont('helvetica', 'bold');
             } else {
-              doc.setTextColor(0, 0, 0);
+              doc.setTextColor(50, 50, 50); // Dark Gray
               doc.setFont('helvetica', 'normal');
             }
             
-            doc.text(`${prefix} ${option}`, margin + 6, currentY);
-            currentY += lineHeight - 1;
+            // Wrap long options
+            const optionText = `${prefix} ${option}`;
+            const optLines = doc.splitTextToSize(optionText, contentWidth - 12);
+            
+            optLines.forEach((line: string) => {
+              doc.text(line, margin + 6, currentY);
+              currentY += lineHeight - 1;
+            });
           });
         }
+
+        // Add the Explanation below the answers
+        if (quiz.explanation) {
+           currentY += 2;
+           doc.setFont('helvetica', 'italic');
+           doc.setFontSize(8);
+           doc.setTextColor(100, 100, 100); // Light Gray
+           
+           const expLines = doc.splitTextToSize(`Explanation: ${quiz.explanation}`, contentWidth - 12);
+           expLines.forEach((line: string) => {
+             doc.text(line, margin + 6, currentY);
+             currentY += lineHeight - 2; // Slightly tighter line height for explanations
+           });
+        }
         
-        currentY += 5; // Space between questions
+        currentY += 8; // Extra space between full questions
       });
       
       currentY += 5;
@@ -565,30 +615,6 @@ async function formatBlock(
       break;
     }
 
-    case 'mermaid': {
-      checkSpace(25);
-      const mermaidCode = block.props.mermaidCode || '';
-      
-      // Mermaid placeholder
-      doc.setFillColor(245, 250, 255);
-      doc.rect(margin, currentY - 3, contentWidth, 20, 'F');
-      
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text(' Mermaid Diagram', margin + 3, currentY + 4);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(100);
-      
-      const preview = mermaidCode.substring(0, 100) + (mermaidCode.length > 100 ? '...' : '');
-      doc.text(preview, margin + 3, currentY + 11);
-      
-      doc.setTextColor(0);
-      doc.setFontSize(fontSize);
-      currentY += 23;
-      break;
-    }
 
     default: {
       // Generic block handling
@@ -628,13 +654,15 @@ function extractTextContent(content: any[]): string {
 
 export async function exportNoteToPDF(
   noteTitle: string,
-  blocks: BlockNoteContent
-): Promise<void> {
+  blocks: BlockNoteContent,
+  returnBuffer?:boolean
+): Promise<ArrayBuffer |void> {
   return exportBlockNoteToPDF(noteTitle, blocks, {
     fontSize: 11,
     lineHeight: 7,
     margin: 15,
     includeHeader: true,
     includeFooter: true,
+    returnBuffer:returnBuffer
   });
 }

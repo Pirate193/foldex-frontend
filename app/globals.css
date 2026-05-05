@@ -7,8 +7,10 @@
 @custom-variant dark (&:is(.dark *));
 
 html, body {
-  overflow: hidden; /* Prevents the entire app from ever bouncing or scrolling */
+  overscroll-behavior: none;
 }
+
+
 
 @theme inline {
     --font-heading: var(--font-sans);

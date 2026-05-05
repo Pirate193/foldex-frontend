@@ -83,7 +83,7 @@ async function clientAiFetch(
     const requestBody = JSON.parse(options?.body as string || "{}");
     
     const { messages: chatMessages, model: modelId, webSearch,contextFolder,
-    contextNote }:{messages:UIMessage[],model:string,webSearch:boolean,contextFolder?:{ id: string, name: string }[],contextNote?: { id: string, title: string }[]} = requestBody;
+    contextNote,filecontext }:{messages:UIMessage[],model:string,webSearch:boolean,contextFolder?:{ id: string, name: string }[],contextNote?: { id: string, title: string }[],filecontext?:string} = requestBody;
 
     if (!modelId) {
       return new Response(
@@ -111,7 +111,7 @@ async function clientAiFetch(
     }
 
     // 3. Get system prompt
-    const systemPrompt = await getEffectiveSystemPrompt(webSearch,contextFolder,contextNote);
+    const systemPrompt = await getEffectiveSystemPrompt(webSearch,contextFolder,contextNote,filecontext);
 
     // 4. Create provider + model instance
     const providerInstance = createProviderInstance(provider.id, apiKey);

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 
 export default function PricingPage() {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen overflow-auto">
             <HeroHeader />
             <main className="flex-1 flex flex-col items-center justify-center py-32 px-6">
                 <div className="max-w-2xl mx-auto text-center space-y-8 mt-12">

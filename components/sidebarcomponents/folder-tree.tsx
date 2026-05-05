@@ -176,7 +176,7 @@ export function FolderTreeItem({
           <div
             ref={setRefs}
             className={cn(
-              "group/folder mt-1 flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50",
+              "group/folder  flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50",
               isDragging && "opacity-40 cursor-grabbing",
               isOver && "bg-primary/20 hover:bg-primary/20 ring-1 ring-primary",
             )}

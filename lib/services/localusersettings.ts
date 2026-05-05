@@ -85,6 +85,7 @@ function buildSystemPrompt(
   folderContext?: { id: string; name: string }[],
   noteContext?: { id: string; title: string }[],
   customUserPrompt?: string | null,
+  filecontext?:string
 ): string {
   const folderContextStr = folderContext && folderContext.length > 0
     ? `- **Tagged Folders**: ${folderContext.map(f => `"${f.name}" (ID: ${f.id})`).join(", ")}`
@@ -101,6 +102,8 @@ You are pslmpAI, an expert study assistant and tutor. Your goal is to help stude
 - **User Name**: ${userInfo?.name || "Student"} (use when addressing them)
 ${folderContextStr}
 ${noteContextStr}
+
+${filecontext?`Here is the extracted text from the attached files${filecontext}`:"no file attached" }
 
 ---
 
@@ -303,6 +306,7 @@ export async function getEffectiveSystemPrompt(
     websearch : boolean,
     folderContext?: { id: string; name: string }[],
     noteContext?: { id: string; title: string }[],
+    filecontext?:string
 ): Promise<string> {
     const userId = getUserId();
     const db = await getLocalDb();
@@ -326,6 +330,7 @@ export async function getEffectiveSystemPrompt(
         folderContext,
         noteContext,
         systemPrompt,
+        filecontext
     );
 }
 

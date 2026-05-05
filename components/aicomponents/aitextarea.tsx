@@ -15,6 +15,7 @@ interface TipTapEditorProps {
   promptItems: SuggestionItem[]
   onSubmit: (text: string, mentions: {id: string, label: string, type: string}[]) => void
   onMentionsChange?: (mentions: {id: string, label: string, type: string}[]) => void
+  onUpdate?: (text: string) => void;
   disabled?: boolean
   className?: string
   placeholder?: string
@@ -68,7 +69,8 @@ const SlashCommand = Mention.extend({ name: 'slashCommand' })
 
 export function PromptTipTapEditor({ 
   mentionItems, promptItems, onSubmit, onMentionsChange, disabled, className, 
-  placeholder = "Ask anything, type @ to tag, / for commands" 
+  placeholder = "Ask anything, type @ to tag, / for commands" ,
+  onUpdate
 }: TipTapEditorProps) {
   
   const controller = usePromptInputController()
@@ -201,6 +203,7 @@ export function PromptTipTapEditor({
     onUpdate: ({ editor }) => {
       controller.textInput.setInput(editor.getText())
       if (onMentionsChange) onMentionsChange(extractMentions(editor.getJSON()))
+      onUpdate?.(editor.getText())
     }
   })
 

@@ -20,6 +20,7 @@ interface Aibody {
     title:string
   }[];
   model: string;
+  filecontext?:string;
 }
 interface AiStore {
   isOpen: boolean;
@@ -50,7 +51,8 @@ export const useAiStore = create<AiStore>((set) => ({
     webSearch: false,
     contextFolder: [],
     contextNote: [],
-    model:""
+    model:"",
+    filecontext:""
   },
   activeNoteId: null,
   isNotePanelOpen: false,

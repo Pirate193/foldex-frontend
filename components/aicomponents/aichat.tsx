@@ -63,17 +63,21 @@ import { useFolders } from "@/hooks/use-folders";
 import { useNotes } from "@/hooks/use-notes";
 import { SuggestionItem } from "./suggestion-list";
 import { PromptTipTapEditor } from "./aitextarea";
+import { ParsedAttachment, useFileParser } from "@/hooks/use-file-parser";
 
 const AI_CHAT_URL = `${process.env.NODE_ENV === "development" 
     ? "http://localhost:3000" 
     : "https://api.pslmp.foldex.space"}/api/ai/chat`;
 
-const PromptInputAttachmentsDisplay = () => {
+const PromptInputAttachmentsDisplay = ({ 
+  parseStates, 
+  onRemoveParsed 
+}: { 
+  parseStates: Map<string, ParsedAttachment>,
+  onRemoveParsed: (id: string) => void 
+}) => {
   const attachments = usePromptInputAttachments();
-
-  if (attachments.files.length === 0) {
-    return null;
-  }
+  if (attachments.files.length === 0) return null;
 
   return (
     <Attachments variant="inline">
@@ -81,7 +85,11 @@ const PromptInputAttachmentsDisplay = () => {
         <Attachment
           data={attachment}
           key={attachment.id}
-          onRemove={() => attachments.remove(attachment.id)}
+          parseState={parseStates.get(attachment.id)} 
+          onRemove={() => {
+            attachments.remove(attachment.id); // Removes from UI
+            onRemoveParsed(attachment.id);     // Removes from your custom hook's Map!
+          }}
         >
           <AttachmentPreview />
           <AttachmentRemove />
@@ -89,6 +97,23 @@ const PromptInputAttachmentsDisplay = () => {
       ))}
     </Attachments>
   );
+};
+
+const BackgroundParserWatcher = ({ parse }: { parse: any }) => {
+  // Now this hook is safely INSIDE the provider!
+  const attachments = usePromptInputAttachments();
+  const prevIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    attachments.files.forEach((filePart) => {
+      if (!prevIdsRef.current.has(filePart.id) && filePart.type === "file") {
+        prevIdsRef.current.add(filePart.id);
+        parse(filePart.id, filePart); // starts immediately on add
+      }
+    });
+  }, [attachments.files, parse]);
+
+  return null; // It renders nothing visually!
 };
 
 export const formatMessageText = (text: string) => {
@@ -153,7 +178,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
   const [model, setModel] = useState<string>("");
   const selectedModel = model || (availableModels.length > 0 ? availableModels[0].model.id : "");
   const isOnline = useOnlineStatus();
-
+   const { state: parseStates, parse, remove: removeParsed, isParsing, buildContext } = useFileParser();
   const pendingMessageProcessedRef = useRef(false);
   const [hasProcessedPendingMessage, setHasProcessedPendingMessage] =
     useState(false);
@@ -230,7 +255,8 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
       toast.error("You're offline. AI features require an internet connection.");
       return;
     }
-
+     
+    const parsedFileContext = buildContext();
     try {
       await addMessage({
         id:chatId,
@@ -247,7 +273,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
     sendMessage(
       {
         text: message.text || "Sent with attachments",
-        files: message.files,
+        files: [],
       },
       {
         body: {
@@ -255,6 +281,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
           webSearch: useWebSearch,
           contextFolder:contextFolder,
           contextNote:contextNote,
+          filecontext:parsedFileContext
         },
       }
     );
@@ -294,7 +321,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
         sendMessage(
           {
             text: pendingMessage.text || "",
-            files: pendingMessage.files,
+            files: [],
           },
           {
             body: {
@@ -302,6 +329,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
               model: selectedModel,
               contextFolder:body.contextFolder,
               contextNote:body.contextNote,
+              filecontext:body.filecontext
             },
           },
         );
@@ -552,6 +580,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
         </Conversation>
 
        <PromptInputProvider>
+        <BackgroundParserWatcher parse={parse} />
         <PromptInput
           onSubmit={handleSubmit}
           className="mt-4"
@@ -559,12 +588,13 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
           multiple
         >
           <PromptInputHeader>
-            <PromptInputAttachmentsDisplay />
+            <PromptInputAttachmentsDisplay parseStates={parseStates} onRemoveParsed={removeParsed} />
           </PromptInputHeader>
           <PromptInputBody>
             <PromptTipTapEditor
                              mentionItems={mentionItems}
                              promptItems={promptItems}
+                             onUpdate={(newtext)=>setText(newtext)}
                              onMentionsChange={handleMentionsChange}
                              onSubmit={(_text, currentMentions) => {
                                const form = document.querySelector('.tiptap')?.closest('form') as HTMLFormElement
@@ -622,7 +652,7 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
                 </PromptInputSelect>
               )}
             </PromptInputTools>
-            <PromptInputSubmit disabled={(!text && !status) || !selectedModel || !isOnline} status={status} />
+            <PromptInputSubmit disabled={(!text || !status) || isParsing || !selectedModel || !isOnline} status={status} />
           </PromptInputFooter>
         </PromptInput>
         </PromptInputProvider>

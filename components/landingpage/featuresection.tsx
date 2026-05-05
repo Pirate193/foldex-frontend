@@ -188,8 +188,10 @@ export default function FeaturesSection() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">Custom Block System</h2>
-                                        <p className="text-foreground">Build powerful workflows using our extensible block architecture for specialized note-taking.</p>
+                                        <h2 className="group-hover:text-secondary-950 text-lg font-medium text-zinc-800 transition dark:text-white">Built for How Students Actually Think</h2>
+                                        <p className="text-foreground">Flashcards, quizzes, diagrams, and whiteboards 
+live inside your notes — not in five separate apps. 
+Study and capture ideas in the same place.</p>
                                     </div>
                                 </div>
                                 <div className="rounded-tl-(--radius) relative -mb-6 -mr-6 mt-6 h-fit border-l border-t p-6 py-6 sm:ml-6">
