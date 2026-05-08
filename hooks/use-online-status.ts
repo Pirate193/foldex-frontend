@@ -17,18 +17,18 @@ export function useOnlineStatus() {
         }
 
         try {
-            // Attempt to reach a fast, reliable server (Cloudflare's trace endpoint is great for this)
-            // Adding a random timestamp (?t=...) forces the browser to actually check the web 
-            // instead of returning a cached success response.
-            await fetch(`https://1.1.1.1/cdn-cgi/trace?t=${new Date().getTime()}`, {
-                method: "HEAD", 
+            // THE FIX: Fetch a tiny 16px image from Google.
+            // "mode: 'no-cors'" tells the browser to skip security checks since we 
+            // don't care about the image data, we just care if the request survives!
+            await fetch(`https://www.google.com/favicon.ico?t=${new Date().getTime()}`, {
+                mode: "no-cors", 
                 cache: "no-store" 
             });
             
-            // If the fetch succeeds, we have real internet!
+            // If the fetch doesn't throw an error, we have real internet!
             setIsOnline(true);
         } catch (error) {
-            // If the fetch fails (timeout or network error), we are in "Lie-Fi"
+            // If it throws, the network is physically unreachable ("Lie-Fi")
             setIsOnline(false);
         }
     }, []);
