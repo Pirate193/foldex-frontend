@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 // ============================================
 // TYPES
 // ============================================
-export type TabType = 'note';
+export type TabType = 'note'|'video';
 
 export interface Tab {
   id: string;           // unique key: `${type}-${itemId}`

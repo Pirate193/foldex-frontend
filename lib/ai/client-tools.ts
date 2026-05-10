@@ -427,5 +427,46 @@ Instructions: Cite these sources using [1], [2], [3], etc. in your response.
         }
       },
     }),
+
+    generateVideo: tool({
+      description: "Generate an AI-powered Manim explainer video. Use this when the user asks for a visual animation or video explanation of a concept. The video will be rendered in the background and the user will be notified when it's ready. This is a beta feature.",
+      inputSchema: z.object({
+        prompt: z.string().describe("A detailed description of what concept to explain in the video"),
+        folderId: z.string().optional().describe("Optional folder ID to place the video in"),
+      }),
+      execute: async ({ prompt, folderId }) => {
+        try {
+          // Dynamic import to avoid bundling issues
+          const { generateManimCode } = await import("./manim-agent");
+          const { videoapi } = await import("@/lib/api");
+
+          // Generate Manim code locally using the user's model
+          console.log("[ClientTools] Generating Manim code locally...");
+          const manimResult = await generateManimCode({ prompt, model });
+
+          // Submit to backend for rendering
+          const result = await videoapi.generate({
+            title: manimResult.title,
+            sceneName: manimResult.sceneName,
+            code: manimResult.code,
+            description: manimResult.description,
+            prompt,
+            folderId,
+          });
+
+          console.log("[ClientTools] generateVideo: queued", result.videoId);
+          return {
+            success: true,
+            videoId: result.videoId,
+            title: manimResult.title,
+            message: `Video "${manimResult.title}" is being generated. The user will be notified when it's ready.`,
+          };
+        } catch (error) {
+          console.error("[ClientTools] generateVideo error:", error);
+          return { success: false, error: `Failed to generate video: ${error}` };
+        }
+      },
+    }),
+
   };
 }

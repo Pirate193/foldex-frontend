@@ -108,7 +108,7 @@ export default function HeroSection() {
                                     speedSegment={0.3}
                                     as="h1"
                                     className="mx-auto mt-4 max-w-4xl text-balance text-5xl max-md:font-semibold md:text-7xl lg:mt-8 xl:text-[5.25rem]">
-                                    The Open-Source Alternative to Notion
+                                    Your Personalized self Learning Management Platform
                                 </TextEffect>
                                 <TextEffect
                                     per="line"

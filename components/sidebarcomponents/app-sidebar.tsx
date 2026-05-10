@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveX, Command, Compass, File, FileText, Folder, Home, Inbox, Plus, Send, Settings, Sparkles, Trash2 } from "lucide-react"
+import { ArchiveX, Command, Compass, File, FileText, Folder, Home, Inbox, Plus, Send, Settings, Sparkles, Trash2, VideoIcon } from "lucide-react"
 
 import { NavUser } from "@/components/sidebarcomponents/nav-user"
 import { Label } from "@/components/ui/label"
@@ -45,6 +45,11 @@ const data = {
       url: "/app?view=home",
       icon: Home,
     },
+    {
+      title:"video vault",
+      url: "/app?view=watch",
+      icon: VideoIcon,
+    }
   ],
 }
 

@@ -86,6 +86,7 @@ export function useTabSync() {
 function getDefaultTitle(type: string): string {
   switch (type) {
     case 'note': return 'Note';
+    case 'video': return 'Video';
     default: return 'Tab';
   }
 }

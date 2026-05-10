@@ -25,6 +25,8 @@ function getTabIcon(type: TabType) {
   switch (type) {
     case 'note':
       return <FileText className="h-3.5 w-3.5 shrink-0" />;
+    case 'video':
+      return <Video className="h-3.5 w-3.5 shrink-0" />;
     default:
       return <FileIcon className="h-3.5 w-3.5 shrink-0" />;
   }

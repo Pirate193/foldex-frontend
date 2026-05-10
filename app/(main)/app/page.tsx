@@ -9,6 +9,8 @@ import NoteView from "@/components/views/note-view";
 import { useSession } from "@/hooks/use-auth";
 import { isDesktopApp } from "@/lib/isdesktop";
 import { syncLocalToCloud } from "@/lib/services/sync";
+import VideoView from "@/components/views/video-view";
+import WatchView from "@/components/views/watch-view";
 
 function MasterAppView() {
   const searchParams = useSearchParams();
@@ -20,6 +22,12 @@ function MasterAppView() {
   
   if (view === "note") {
     return <NoteView />;
+  }
+  if (view === "video") {
+    return <VideoView />;
+  }
+  if (view === "watch") {
+    return <WatchView />;
   }
 
   // Default to home view

@@ -1,21 +1,24 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInput, SidebarGroupLabel } from "../ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "../ui/dropdown-menu"
-import { Folder, FileText, Plus, Filter, ChevronRight } from "lucide-react"
+import { Folder, FileText, Plus, Filter, ChevronRight, Video } from "lucide-react"
 import { useCreateNote, useNotes } from "@/hooks/use-notes"
 import { toast } from "sonner"
 import { useCreateFolder, useFolders } from "@/hooks/use-folders"
+import { useMyVideos } from "@/hooks/use-videos"
 import { Spinner } from "../ui/spinner"
 import NoteItem from "../notescomponent/noteitem"
+import VideoItem from "../videos/videoitem"
 import { DndSidebarProvider } from "./dnd-provider"
 import { FolderTreeItem } from "./folder-tree"
 import { useState, useMemo } from "react"
-import { Folder as FolderType, NoteListItem } from "@/lib/api-types"
+import { Folder as FolderType, NoteListItem, Video as VideoType } from "@/lib/api-types"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible"
 import { Button } from "../ui/button"
 import { FOLDER_COLORS } from "@/lib/foldercolor"
 import { useSession } from "@/hooks/use-auth"
 import { useDroppable } from "@dnd-kit/core"
 import { cn } from "@/lib/utils"
+import { VideoGenerationModal } from "../videos/videogenerationmodal"
 
 const RootDropZone = ({ children, className }: { children: React.ReactNode, className?: string }) => {
     const { setNodeRef, isOver } = useDroppable({
@@ -45,9 +48,11 @@ export const NavContent = () => {
     const { mutateAsync: createFolder } = useCreateFolder();
     const { data: allFolders = [], isLoading: isLoadingFolders } = useFolders();
     const { data: allNotes = [], isLoading: isLoadingNotes } = useNotes();
+    const { data: allVideos = [], isLoading: isLoadingVideos } = useMyVideos();
     const {data:session}=useSession();
     const [sortOption, setSortOption] = useState<SortOption>("A-Z");
     const [searchQuery, setSearchQuery] = useState("");
+    const [videoModalOpen, setVideoModalOpen] = useState(false);
 
     const handleCreateNote = async () => {
         try {
@@ -78,6 +83,11 @@ export const NavContent = () => {
         return allNotes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()));
     }, [allNotes, searchQuery]);
 
+    const filteredVideos = useMemo(() => {
+        if (!searchQuery.trim()) return allVideos;
+        return allVideos.filter(v => (v.title || "").toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [allVideos, searchQuery]);
+
     // Recents: Top 5 notes sorted by updated time (not affected by search text unless we want)
     const recentNotes = useMemo(() => {
         return [...filteredNotes]
@@ -89,14 +99,16 @@ export const NavContent = () => {
     const pinnedFolders = useMemo(() => filteredFolders.filter(f => f.isPinned), [filteredFolders]);
     const pinnedNotes = useMemo(() => filteredNotes.filter(n => n.isPinned), [filteredNotes]);
 
-    // Workspace roots combined
+    // Workspace roots combined (folders + notes + videos at root level)
     const combinedRoots = useMemo(() => {
         let rootsFolders = filteredFolders.filter(f => !f.parentId);
         let rootsNotes = filteredNotes.filter(n => !n.folderId);
+        let rootsVideos = filteredVideos.filter(v => !v.folderId);
         
         let combined = [
             ...rootsFolders.map(f => ({ ...f, _type: "folder" as const, _title: f.name, _date: f.updatedAt })),
-            ...rootsNotes.map(n => ({ ...n, _type: "note" as const, _title: n.title, _date: n.updatedAt }))
+            ...rootsNotes.map(n => ({ ...n, _type: "note" as const, _title: n.title, _date: n.updatedAt })),
+            ...rootsVideos.map(v => ({ ...v, _type: "video" as const, _title: v.title || "Untitled Video", _date: v.updatedAt })),
         ];
 
         combined.sort((a, b) => {
@@ -107,9 +119,12 @@ export const NavContent = () => {
             return 0;
         });
         return combined;
-    }, [filteredFolders, filteredNotes, sortOption]);
+    }, [filteredFolders, filteredNotes, filteredVideos, sortOption]);
+
+    const isLoading = isLoadingFolders || isLoadingNotes || isLoadingVideos;
 
     return (
+        <>
         <Sidebar collapsible="none" className="hidden flex-1 md:flex min-w-0">
             <SidebarHeader className="gap-3.5 border-b p-4">
                 <div className="flex w-full items-center justify-between">
@@ -131,6 +146,19 @@ export const NavContent = () => {
                                 <FileText className="h-4 w-4 mr-2" />
                                 New Note
                             </DropdownMenuItem>
+                            <DropdownMenuItem 
+                                className="cursor-pointer" 
+                                onClick={() => {
+                                    if (!session && (!localStorage || !localStorage.getItem("pslmp_user_id"))) {
+                                        toast.info("You need to sign in to use this feature.");
+                                        return;
+                                    }
+                                    setVideoModalOpen(true);
+                                }}
+                            >
+                                <Video className="h-4 w-4 mr-2" />
+                                New Video
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -143,7 +171,7 @@ export const NavContent = () => {
 
             <SidebarContent className="overflow-y-auto scrollbar-hidden">
                 <DndSidebarProvider allFolders={allFolders as any}>
-                    {isLoadingFolders || isLoadingNotes ? (
+                    {isLoading ? (
                         <div className="flex items-center justify-center p-8">
                             <Spinner />
                         </div>
@@ -188,6 +216,7 @@ export const NavContent = () => {
                                                         folder={f as any}
                                                         allFolders={allFolders as any}
                                                         allNotes={allNotes}
+                                                        allVideos={allVideos}
                                                         depth={0}
                                                     />
                                                 ))}
@@ -237,8 +266,19 @@ export const NavContent = () => {
                                                         folder={item as any}
                                                         allFolders={allFolders as any}
                                                         allNotes={allNotes}
+                                                        allVideos={allVideos}
                                                         sortOption={sortOption}
                                                         depth={0}
+                                                    />
+                                                );
+                                            } else if (item._type === "video") {
+                                                return (
+                                                    <VideoItem
+                                                        key={`video-${item.id}`}
+                                                        videoId={item.id}
+                                                        title={item._title}
+                                                        folderId={(item as any).folderId}
+                                                        status={(item as any).status}
                                                     />
                                                 );
                                             } else {
@@ -250,7 +290,7 @@ export const NavContent = () => {
                                                 Workspace is empty. Create a new folder or note.
                                             </div>
                                         )}
-                                        {searchQuery.trim() && filteredFolders.length === 0 && filteredNotes.length === 0 && (
+                                        {searchQuery.trim() && filteredFolders.length === 0 && filteredNotes.length === 0 && filteredVideos.length === 0 && (
                                             <div className="text-xs text-muted-foreground italic px-2 py-4">
                                                 No results found for "{searchQuery}".
                                             </div>
@@ -263,5 +303,10 @@ export const NavContent = () => {
                 </DndSidebarProvider>
             </SidebarContent>
         </Sidebar>
+        <VideoGenerationModal
+            open={videoModalOpen}
+            onOpenChange={setVideoModalOpen}
+        />
+        </>
     )
 }

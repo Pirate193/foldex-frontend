@@ -136,4 +136,76 @@ export type UserSettings = {
 export type KeyValidationResult = {
   valid: boolean;
   error?: string;
-};
+};
+
+export type GetVideoStatusResponse = {
+  id: string;
+  status: string; // "queued" | "generating" | "ready" | "failed"
+  videoUrl: string | null;
+  thumbnail: string | null;
+  error: string;
+};
+
+export type CreateVideoBody = {
+  title: string;
+  sceneName: string;
+  code: string;
+  folderId?: string;
+  description?: string;
+  prompt?: string;
+};
+
+export type Video = {
+    id:string,
+    userId: string,
+    folderId: string | null,
+    title: string,
+    description: string | null,
+    transcript: string | null,
+    url: string,
+    filesize: number,
+    thumbnail: string,
+    prompt: string,
+    isPublic: boolean,
+    status: string,    
+    sources: { title: string, url: string, snippet: string }[], 
+    creatorname: string,
+    creatorprofile: string,
+    code: string,
+    model: string | null,
+    tags: string[] | null,
+    errorTraceback: string,    
+    likes: number,
+    dislikes: number,    
+    createdAt: string,
+    updatedAt: string,
+};
+
+export type UpdateVideoBody = {
+    id:string,
+    folderId?: string | null,
+    isPublic?: boolean,
+};
+
+export type GenerateFromPromptBody = {
+    prompt: string;
+    model: string;
+    fileContext?: string;
+    folderId?: string;
+};
+
+export type FeedbackBody = {
+    type: 'like' | 'dislike';
+    tags?: string[];
+};
+
+export type FeedbackResponse = {
+    success: boolean;
+    action: 'created' | 'switched' | 'removed';
+    currentVote: 'like' | 'dislike' | null;
+};
+
+export type UserFeedbackResponse = {
+    currentVote: 'like' | 'dislike' | null;
+    tags: string[] | null;
+};

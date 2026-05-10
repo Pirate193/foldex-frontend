@@ -9,6 +9,10 @@ const NoteContentInner = dynamic(() => import('./content/NoteContentInner'), {
   loading: () => <ContentSpinner />,
   ssr: false 
 });
+const VideoContentInner = dynamic(() => import('./content/videocontentinner'), { 
+  loading: () => <ContentSpinner />,
+  ssr: false 
+});
 
 
 function ContentSpinner() {
@@ -55,6 +59,13 @@ function TabRenderer({ tab }: { tab: Tab }) {
       return (
         <NoteContentInner
           noteId={tab.itemId}
+          folderId={tab.folderId || undefined}
+        />
+      );
+    case 'video':
+      return (
+        <VideoContentInner
+          videoId={tab.itemId}
           folderId={tab.folderId || undefined}
         />
       );

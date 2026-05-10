@@ -23,6 +23,11 @@ function buildTabUrl(
       if (folderId) params.set('folderId', folderId);
       return `/app?${params.toString()}`;
     }
+    case 'video': {
+      const params = new URLSearchParams({ view: 'video', id: itemId });
+      if (folderId) params.set('folderId', folderId);
+      return `/app?${params.toString()}`;
+    }
     default:
       return '/';
   }
@@ -62,6 +67,16 @@ export function parseTabFromUrl(pathnameOrUrl: string): {
     if (id) {
       return {
         type: 'note',
+        itemId: id,
+        folderId: searchParams.get('folderId') || undefined,
+      };
+    }
+  }
+  if (pathname === '/app' && searchParams.get('view') === 'video') {
+    const id = searchParams.get('id');
+    if (id) {
+      return {
+        type: 'video',
         itemId: id,
         folderId: searchParams.get('folderId') || undefined,
       };

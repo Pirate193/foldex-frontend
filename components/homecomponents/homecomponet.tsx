@@ -1,19 +1,21 @@
 "use client"
 
-import { Grid2X2, Home, List, Search, SlidersHorizontal, Trash2, AlertTriangle, FileText } from "lucide-react"
+import { Grid2X2, Home, List, Search, SlidersHorizontal, Trash2, AlertTriangle, FileText, Video } from "lucide-react"
 import { SidebarTrigger } from "../ui/sidebar"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { FolderCard } from "./foldercard"
 import { NoteCard } from "./notecard"
+import { VideoCardHome } from "./videocard-home"
 import { useNotes, useDeleteNote, useCreateNote } from "@/hooks/use-notes"
 import { useFolders, useDeleteFolder, useCreateFolder } from "@/hooks/use-folders"
+import { useMyVideos, useDeleteVideo } from "@/hooks/use-videos"
 import { useState, useMemo, useCallback } from "react"
 import { Spinner } from "../ui/spinner"
 import { DndSidebarProvider } from "../sidebarcomponents/dnd-provider"
 import { groupByTime } from "@/lib/timegroup"
-import { NoteListItem, Folder } from "@/lib/api-types"
+import { NoteListItem, Folder, Video as VideoType } from "@/lib/api-types"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -36,18 +38,21 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { FOLDER_COLORS } from "@/lib/foldercolor"
 
 type SortOption = "A-Z" | "Z-A" | "Newest" | "Oldest";
-type ViewFilter = "all" | "notes";
+type ViewFilter = "all" | "notes" | "videos";
 
 // Unified item type for mixed sorting
 type WorkspaceItem =
   | { _type: "note"; _title: string; _date: string; data: NoteListItem }
-  | { _type: "folder"; _title: string; _date: string; data: Folder };
+  | { _type: "folder"; _title: string; _date: string; data: Folder }
+  | { _type: "video"; _title: string; _date: string; data: VideoType };
 
 export function HomeComponent() {
   const { data: notes, isLoading: isLoadingNotes } = useNotes()
   const { data: folders, isLoading: isLoadingFolders } = useFolders()
+  const { data: videos, isLoading: isLoadingVideos } = useMyVideos()
   const { mutateAsync: deleteNote } = useDeleteNote()
   const { mutateAsync: deleteFolder } = useDeleteFolder()
+  const { mutateAsync: deleteVideo } = useDeleteVideo()
   const { mutateAsync: createNote } = useCreateNote();
   const { mutateAsync: createFolder } = useCreateFolder();
 
@@ -59,10 +64,11 @@ export function HomeComponent() {
   // Multi-select state
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set())
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set())
+  const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const totalSelected = selectedNotes.size + selectedFolders.size;
+  const totalSelected = selectedNotes.size + selectedFolders.size + selectedVideos.size;
 
   const toggleNoteSelect = useCallback((id: string) => {
     setSelectedNotes(prev => {
@@ -82,9 +88,19 @@ export function HomeComponent() {
     });
   }, []);
 
+  const toggleVideoSelect = useCallback((id: string) => {
+    setSelectedVideos(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   const clearSelection = useCallback(() => {
     setSelectedNotes(new Set());
     setSelectedFolders(new Set());
+    setSelectedVideos(new Set());
   }, []);
 
   const handleBulkDelete = async () => {
@@ -93,6 +109,7 @@ export function HomeComponent() {
       const promises: Promise<any>[] = [];
       selectedNotes.forEach(id => promises.push(deleteNote(id)));
       selectedFolders.forEach(id => promises.push(deleteFolder(id)));
+      selectedVideos.forEach(id => promises.push(deleteVideo(id)));
       await Promise.all(promises);
       toast.success(`Deleted ${totalSelected} item${totalSelected > 1 ? "s" : ""}`);
       clearSelection();
@@ -119,6 +136,13 @@ export function HomeComponent() {
     return folders.filter(f => f.name.toLowerCase().includes(q));
   }, [folders, searchQuery]);
 
+  const filteredVideos = useMemo(() => {
+    if (!videos) return [];
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return videos;
+    return videos.filter(v => (v.title || "").toLowerCase().includes(q));
+  }, [videos, searchQuery]);
+
   // Combine and sort
   const combinedItems = useMemo(() => {
     let items: WorkspaceItem[] = [];
@@ -137,13 +161,26 @@ export function HomeComponent() {
           _date: n.updatedAt,
           data: n,
         })),
+        ...filteredVideos.map(v => ({
+          _type: "video" as const,
+          _title: v.title || "Untitled Video",
+          _date: v.updatedAt,
+          data: v,
+        })),
       ];
-    } else {
+    } else if (viewFilter === "notes") {
       items = filteredNotes.map(n => ({
         _type: "note" as const,
         _title: n.title,
         _date: n.updatedAt,
         data: n,
+      }));
+    } else if (viewFilter === "videos") {
+      items = filteredVideos.map(v => ({
+        _type: "video" as const,
+        _title: v.title || "Untitled Video",
+        _date: v.updatedAt,
+        data: v,
       }));
     }
 
@@ -156,7 +193,7 @@ export function HomeComponent() {
     });
 
     return items;
-  }, [filteredNotes, filteredFolders, sortOption, viewFilter]);
+  }, [filteredNotes, filteredFolders, filteredVideos, sortOption, viewFilter]);
 
   // Group by time
   const timeGroups = useMemo(() => {
@@ -167,7 +204,7 @@ export function HomeComponent() {
   }, [combinedItems]);
 
   const allFolders = folders || [];
-  const isLoading = isLoadingNotes || isLoadingFolders;
+  const isLoading = isLoadingNotes || isLoadingFolders || isLoadingVideos;
  
 
   const handleCreateNote = async () => {
@@ -197,6 +234,17 @@ export function HomeComponent() {
           view={view}
           isSelected={selectedFolders.has(item.data.id)}
           onToggleSelect={toggleFolderSelect}
+        />
+      );
+    }
+    if (item._type === "video") {
+      return (
+        <VideoCardHome
+          key={`video-${item.data.id}`}
+          video={item.data as VideoType}
+          view={view}
+          isSelected={selectedVideos.has(item.data.id)}
+          onToggleSelect={toggleVideoSelect}
         />
       );
     }
@@ -265,6 +313,7 @@ export function HomeComponent() {
               <TabsList>
                 <TabsTrigger value="all" className="cursor-pointer">All</TabsTrigger>
                 <TabsTrigger value="notes" className="cursor-pointer">Notes</TabsTrigger>
+                <TabsTrigger value="videos" className="cursor-pointer">Videos</TabsTrigger>
               </TabsList>
             </Tabs>
 
@@ -393,8 +442,10 @@ export function HomeComponent() {
               </AlertDialogTitle>
               <AlertDialogDescription>
                 This will permanently delete {selectedNotes.size > 0 && `${selectedNotes.size} note${selectedNotes.size > 1 ? "s" : ""}`}
-                {selectedNotes.size > 0 && selectedFolders.size > 0 && " and "}
-                {selectedFolders.size > 0 && `${selectedFolders.size} folder${selectedFolders.size > 1 ? "s" : ""} (including all contents)`}.
+                {selectedNotes.size > 0 && (selectedFolders.size > 0 || selectedVideos.size > 0) && " and "}
+                {selectedFolders.size > 0 && `${selectedFolders.size} folder${selectedFolders.size > 1 ? "s" : ""} (including all contents)`}
+                {selectedFolders.size > 0 && selectedVideos.size > 0 && " and "}
+                {selectedVideos.size > 0 && `${selectedVideos.size} video${selectedVideos.size > 1 ? "s" : ""}`}.
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>

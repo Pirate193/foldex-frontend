@@ -13,15 +13,16 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { toast } from "sonner";
-import { FileText, Folder } from "lucide-react";
+import { FileText, Folder, Video } from "lucide-react";
 import { Folder as FolderType } from "@/lib/api-types";
 import { useMoveNote } from "@/hooks/use-notes";
 import { useUpdateFolder } from "@/hooks/use-folders";
+import { useUpdateVideo } from "@/hooks/use-videos";
 
 // ============================================
 // TYPES
 // ============================================
-export type DragItemType = "folder" | "note";
+export type DragItemType = "folder" | "note" | "video";
 
 export interface DragItemData {
   type: DragItemType;
@@ -78,6 +79,7 @@ export function DndSidebarProvider({
   // Mutations
   const { mutateAsync: moveFolder } = useUpdateFolder();
   const { mutateAsync: moveNote } = useMoveNote();
+  const { mutateAsync: moveVideo } = useUpdateVideo();
 
   // Use pointer sensor with delay — long press ~250ms to start dragging
   // This lets quick clicks pass through for navigation
@@ -201,6 +203,13 @@ export function DndSidebarProvider({
                 });
                 toast.success("Folder moved successfully");
                 break;
+              case "video":
+                await moveVideo({
+                  id: activeItem.id,
+                  data: { folderId: targetFolderId }
+                });
+                toast.success("Video moved successfully");
+                break;
             }
           } else if (overData?.type === "root-zone") {
             if (activeItem.type === "folder" && activeItem.parentId) {
@@ -216,6 +225,13 @@ export function DndSidebarProvider({
                 folderId: null,
               });
               toast.success("Note moved to workspace root");
+            }
+            if (activeItem.type === "video" && activeItem.parentId) {
+              await moveVideo({
+                id: activeItem.id,
+                data: { folderId: null },
+              });
+              toast.success("Video moved to workspace root");
             }
           }
         }
@@ -272,6 +288,9 @@ export function DndSidebarProvider({
               )}
               {activeItem.type === "note" && (
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+              )}
+              {activeItem.type === "video" && (
+                <Video className="h-4 w-4 shrink-0 text-purple-500" />
               )}
               <span className="truncate">{activeItem.label}</span>
             </div>

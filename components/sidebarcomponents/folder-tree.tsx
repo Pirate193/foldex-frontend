@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
-import { Folder as FolderType, NoteListItem } from "@/lib/api-types";
+import { Folder as FolderType, NoteListItem, Video as VideoType } from "@/lib/api-types";
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -15,10 +15,13 @@ import {
   Palette,
   Check,
   FolderOpen,
-  Folder
+  Folder,
+  Video
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NoteItem from "../notescomponent/noteitem";
+import VideoItem from "../videos/videoitem";
+import { VideoGenerationModal } from "../videos/videogenerationmodal";
 import { useDeleteFolder, useUpdateFolder } from "@/hooks/use-folders";
 import { useCreateNote } from "@/hooks/use-notes";
 import { toast } from "sonner";
@@ -55,18 +58,21 @@ export function FolderTreeItem({
   folder,
   allFolders,
   allNotes,
+  allVideos = [],
   sortOption = "A-Z",
   depth = 0,
 }: {
   folder: FolderType;
   allFolders: FolderType[];
   allNotes: NoteListItem[];
+  allVideos?: VideoType[];
   sortOption?: "A-Z" | "Z-A" | "Newest" | "Oldest";
   depth?: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
 
   const { mutateAsync: deleteFolder } = useDeleteFolder();
   const { mutateAsync: updateFolder } = useUpdateFolder();
@@ -106,10 +112,12 @@ export function FolderTreeItem({
   // derived lists
   const childFolders = allFolders.filter((f) => f.parentId === folder.id);
   const childNotes = allNotes.filter((n) => n.folderId === folder.id);
+  const childVideos = allVideos.filter((v) => v.folderId === folder.id);
   
   const combinedChildren = [
     ...childFolders.map(f => ({ ...f, _type: "folder" as const, _title: f.name, _date: f.updatedAt })),
-    ...childNotes.map(n => ({ ...n, _type: "note" as const, _title: n.title, _date: n.updatedAt }))
+    ...childNotes.map(n => ({ ...n, _type: "note" as const, _title: n.title, _date: n.updatedAt })),
+    ...childVideos.map(v => ({ ...v, _type: "video" as const, _title: v.title || "Untitled Video", _date: v.updatedAt })),
   ];
 
   combinedChildren.sort((a, b) => {
@@ -167,7 +175,7 @@ export function FolderTreeItem({
   }
 
   const folderColor = getFolderColor(folder.color);
-  const hasChildren = childFolders.length > 0 || childNotes.length > 0;
+  const hasChildren = childFolders.length > 0 || childNotes.length > 0 || childVideos.length > 0;
 
   return (
     <>
@@ -234,6 +242,19 @@ export function FolderTreeItem({
               <Plus className="mr-2 h-4 w-4" />
               New note inside
             </ContextMenuItem>
+            <ContextMenuItem 
+              onClick={() => {
+                if (typeof window !== "undefined" && !localStorage.getItem("pslmp_user_id")) {
+                    toast.info("You need to sign in to use this feature.");
+                    return;
+                }
+                setVideoModalOpen(true);
+              }} 
+              className="cursor-pointer"
+            >
+              <Video className="mr-2 h-4 w-4" />
+              New video inside
+            </ContextMenuItem>
             <ContextMenuItem onClick={() => setRenameDialogOpen(true)} className="cursor-pointer">
               <Pencil className="mr-2 h-4 w-4" />
               Rename
@@ -298,9 +319,21 @@ export function FolderTreeItem({
                   folder={child as any}
                   allFolders={allFolders}
                   allNotes={allNotes}
+                  allVideos={allVideos}
                   sortOption={sortOption}
                   depth={depth + 1}
                 />
+              );
+            } else if (child._type === "video") {
+              return (
+                <div key={`video-${child.id}`} style={{ paddingLeft: `${(depth + 1) * 12}px` }}>
+                  <VideoItem
+                    videoId={child.id}
+                    title={child._title}
+                    folderId={folder.id}
+                    status={(child as any).status}
+                  />
+                </div>
               );
             } else {
               return (
@@ -325,6 +358,11 @@ export function FolderTreeItem({
         description={`Are you sure you want to delete ${folder.name}? This will also delete all notes inside it.`}
         itemName={folder.name}
         onConfirm={handleDelete}
+      />
+      <VideoGenerationModal
+        open={videoModalOpen}
+        onOpenChange={setVideoModalOpen}
+        folderId={folder.id}
       />
     </>
   );

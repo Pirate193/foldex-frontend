@@ -237,3 +237,41 @@ export async function gradeFlashcardAnswer(userAnswer: string, correctAnswer: st
 
   return output;
 }
+
+// ============================================
+// HELPERS FOR VIDEO GENERATION (desktop)
+// ============================================
+
+/**
+ * Get a model instance for a specific model ID (e.g. "gemini-3-flash-preview").
+ * Used by the video generation modal when user picks a specific model.
+ */
+export async function getModelForGeneration(modelId: string) {
+  try {
+    const provider = getProviderForModel(modelId);
+    if (!provider) return null;
+    const apiKey = await getLocalDecryptedKey(provider.id);
+    if (!apiKey) return null;
+    return createProviderInstance(provider.id, apiKey)(modelId);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get any available model instance for retrying (fixing failed code).
+ * Picks the best small model from user's configured keys.
+ */
+export async function getModelForRetry(preferredModelId?: string) {
+  try {
+    // Try the preferred model first
+    if (preferredModelId) {
+      const instance = await getModelForGeneration(preferredModelId);
+      if (instance) return instance;
+    }
+    // Fall back to best small model
+    return await getBestLocalSmallModelInstance();
+  } catch {
+    return null;
+  }
+}
