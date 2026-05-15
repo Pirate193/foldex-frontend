@@ -17,7 +17,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"; 
 import {
     Upload,
     X,
@@ -39,6 +39,7 @@ import { isDesktopApp } from "@/lib/isdesktop";
 import { useQuery } from "@tanstack/react-query";
 import { settingsapi } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
+import { getcloudfolderId } from "@/lib/services/localfolders";
 
 interface VideoGenerationModalProps {
     open: boolean;
@@ -141,7 +142,7 @@ export function VideoGenerationModal({ open, onOpenChange, folderId }: VideoGene
         setExtractedText(null);
     }, []);
 
-    const handleGenerate = () => {
+    const handleGenerate = async () => {
         if (!prompt.trim()) {
             toast.error("Please enter a prompt");
             return;
@@ -150,12 +151,17 @@ export function VideoGenerationModal({ open, onOpenChange, folderId }: VideoGene
             toast.error("Please select a model");
             return;
         }
+        let cloudfolderId = folderId
+        if(isDesktopApp() && folderId){
+            const cloudid = await getcloudfolderId(folderId);
+            cloudfolderId = cloudid
+        }
 
         generateVideo({
             prompt: prompt.trim(),
             model: selectedModel,
             fileContext: extractedText || undefined,
-            folderId,
+            folderId:cloudfolderId,
         });
 
         // Close modal — polling + toasts handle the rest
@@ -294,7 +300,7 @@ export function VideoGenerationModal({ open, onOpenChange, folderId }: VideoGene
                                 </span>
                             </div>
                         ) : (
-                            <Select value={selectedModel} onValueChange={setSelectedModel}>
+                            <Select defaultValue={availableModels[0].model.id} value={selectedModel} onValueChange={setSelectedModel}>
                                 <SelectTrigger className="w-full cursor-pointer">
                                     <SelectValue placeholder="Choose a model..." />
                                 </SelectTrigger>

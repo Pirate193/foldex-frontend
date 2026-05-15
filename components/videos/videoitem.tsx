@@ -66,8 +66,8 @@ const VideoItem = ({ title, folderId, videoId, status, isActive }: VideoItemProp
                     <div
                         ref={setNodeRef}
                         className={cn(
-                            "group/item flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50 w-full overflow-hidden",
-                            isActive && "bg-primary/10 dark:bg-primary/10 font-medium text-foreground",
+                            "group/item flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm  w-full overflow-hidden",
+                            isActive ? "bg-primary/10 dark:bg-primary/10 font-medium text-foreground":"text-muted-foreground transition-colors hover:bg-accent/50",
                             isDragging && "cursor-grabbing opacity-40",
                             isGenerating && "opacity-70",
                         )}
@@ -84,7 +84,7 @@ const VideoItem = ({ title, folderId, videoId, status, isActive }: VideoItemProp
                         ) : isFailed ? (
                             <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
                         ) : (
-                            <VideoIcon className="h-4 w-4 shrink-0 text-purple-500" />
+                            <VideoIcon className="h-4 w-4 shrink-0 " />
                         )}
                         <span className="flex-1 truncate min-w-0">{title || "Untitled Video"}</span>
                     </div>
@@ -97,7 +97,7 @@ const VideoItem = ({ title, folderId, videoId, status, isActive }: VideoItemProp
                                 className="cursor-pointer"
                             >
                                 <RefreshCcw className="mr-2 h-4 w-4" />
-                                Retry with AI Fix
+                                Retry 
                             </ContextMenuItem>
                         )}
                         <ContextMenuItem

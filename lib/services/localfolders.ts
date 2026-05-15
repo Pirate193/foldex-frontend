@@ -1,6 +1,6 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { getLocalDb } from "../localdb";
-import { folders, notes } from "../schema.local";
+import { folders, notes, syncMap } from "../schema.local";
 
 const getUserId = (): string | null => {
     if (typeof window === "undefined") return null;
@@ -96,3 +96,11 @@ export const deletefolder = async (id: string) => {
         throw error;
     }
 };
+
+export const getcloudfolderId = async(localId:string)=>{
+    const db = await getLocalDb();
+    const [sync]=await db.select().from(syncMap).where(and(eq(syncMap.localId,localId),eq(syncMap.tableName,"folders")))
+
+    if(!sync)  throw Error("cloud Id not found")
+    return sync.cloudId
+}

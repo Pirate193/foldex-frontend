@@ -1,11 +1,8 @@
-// lib/utils/dateFormatter.ts
-// OR add this to your existing lib/utils.ts file
-
 /**
  * Formats a timestamp to relative time (e.g., "2 hours ago", "3 days ago")
  * Handles timezones automatically by using the user's local time
  * 
- * @param timestamp - Unix timestamp in milliseconds (from Convex _creationTime)
+ * @param timestamp - Unix timestamp in milliseconds 
  * @returns Formatted relative time string
  */
 export function formatRelativeTime(timestamp:string): string {
@@ -91,33 +88,3 @@ export function formatFullDate(timestamp: number): string {
   });
 }
 
-// USAGE EXAMPLES:
-
-/*
-// In your VideoCard component:
-import { formatRelativeTime, formatFullDate } from '@/lib/utils/dateFormatter';
-
-const Videocard = ({ videoId, onClick }: VideocardProps) => {
-  const video = useQuery(api.videos.getvideobyId, { videoId: videoId });
-  
-  // ... other code ...
-  
-  return (
-    <div>
-      <p 
-        className="text-sm text-muted-foreground"
-        title={formatFullDate(video._creationTime)} // Shows full date on hover
-      >
-        {formatRelativeTime(video._creationTime)}
-      </p>
-    </div>
-  );
-};
-
-// In WatchList or VideoPage:
-import { formatRelativeTime } from '@/lib/utils/dateFormatter';
-
-const formatDate = (timestamp: number) => {
-  return formatRelativeTime(timestamp);
-};
-*/

@@ -86,8 +86,8 @@ const NoteItem = ({ title, folderId, noteId, isActive }: NoteItemProps) => {
       <div
         ref={setNodeRef}
         className={cn(
-          "group/item  flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50 w-full overflow-hidden",
-          isActive && "bg-primary/10 dark:bg-primary/10 font-medium text-foreground",
+          "group/item  flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm  w-full overflow-hidden",
+          isActive ? "bg-primary/10 dark:bg-primary/10 font-medium text-foreground":"text-muted-foreground transition-colors hover:bg-accent/50",
           isDragging && "cursor-grabbing opacity-40",
         )}
         onClick={() => openInTab('note', noteId, folderId as string, title)}

@@ -136,6 +136,7 @@ ${filecontext?`Here is the extracted text from the attached files${filecontext}`
 | "Show me code", "How to implement" | \`generateCodeSnippet\` | None |
 | "Current events", "Fact check" | \`searchTheWeb\` | None |
 | "What's in this folder?" | \`getfolderitems\` | Folder ID |
+| "Generate a video", "Animate this" | \`generateVideo\` | 0ptional Folder ID |
 ---
 **Note:you can act autonomously and decide what will be the best tool to use in a given situation/conversation even if the user didnt specifically mention it **
 
@@ -214,6 +215,17 @@ ${websearch ? 'The user has a tavily api key so you can use it' : '\n- The user 
 - Required before \`generateVideo\` to gather context
 - **For file research**: Add "pdf" or "filetype:pdf" to query to find downloadable documents
 - **IMPORTANT**: This tool is ONLY available if the user has a Tavily API key configured. If the tool call fails, explain that web search requires a Tavily key in Settings.
+
+### 🎬 Video Generation (\`generateVideo\`)
+**Tool Call Structure:**
+\`\`\`json
+{
+  "optional folderId": "tagged_folder_id",
+  "prompt": "[YOUR STRUCTURED PROMPT - follow template above]",
+  "context": "[Include web search results for accuracy]"
+}
+\`\`\`
+
 
 
 

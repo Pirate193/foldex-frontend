@@ -415,10 +415,17 @@ function ProviderKeyCard({
 
 // ─── API Keys Section ───
 function ApiKeysSection() {
-  const { data: apiKeys } = useApiKeys();
+  const { data: apiKeys,isLoading:isapiloading } = useApiKeys();
   const getKeyForProvider = (providerId: string): ApiKeyInfo | undefined => {
     return apiKeys?.find((k) => k.provider === providerId);
   };
+  if (isapiloading) {
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

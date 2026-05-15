@@ -26,6 +26,7 @@ import { NavContent } from "./nav-content"
 import Link from "next/link"
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog"
 import SettingsComponent from "../settingscomponents/settings-component"
+import { Suspense } from "react"
 
 // This is sample data
 const data = {
@@ -82,7 +83,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupContent className="px-1.5 md:px-0">
+              <Suspense fallback={<div className="h-20" />}>
               <NavMain items={data.navMain} />
+              </Suspense>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -109,7 +112,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       {/* This is the second sidebar */}
       {/* We disable collapsible and let it fill remaining space */}
+      <Suspense fallback={null}>
       <NavContent />
+      </Suspense>
     </Sidebar>
   )
 }

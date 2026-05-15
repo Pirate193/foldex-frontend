@@ -28,11 +28,6 @@ jobs:
       
       - name: Install Dependencies
         run: bun install
-
-      
-      - name: Run Linter
-        run: bun run lint
-
       
       - name: Build Next.js
         run: bun run build

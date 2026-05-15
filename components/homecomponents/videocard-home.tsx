@@ -1,6 +1,6 @@
 "use client";
 
-import { Video as VideoIcon, Trash, Loader2, AlertCircle } from "lucide-react";
+import { Video as VideoIcon, Trash, Loader2, AlertCircle, RefreshCcw } from "lucide-react";
 import { Video } from "@/lib/api-types";
 import { formatRelativeDate } from "@/lib/timegroup";
 import { useTabNavigation } from "@/hooks/useTabNavigation";
@@ -17,6 +17,7 @@ import {
     ContextMenuTrigger,
 } from "../ui/context-menu";
 import DeleteDialog from "../deletedialog";
+import { useGenerateVideo } from "@/hooks/useGenerateVideo";
 
 interface VideoCardHomeProps {
     video: Video;
@@ -29,6 +30,7 @@ export function VideoCardHome({ video, view, isSelected, onToggleSelect }: Video
     const { openInTab } = useTabNavigation();
     const { mutateAsync: deleteVideo } = useDeleteVideo();
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const {handleRetry}=useGenerateVideo();
 
     const isGenerating = video.status === "queued" || video.status === "generating";
     const isFailed = video.status === "failed";
@@ -52,6 +54,15 @@ export function VideoCardHome({ video, view, isSelected, onToggleSelect }: Video
     const contextMenuContent = (
         <ContextMenuContent>
             <ContextMenuGroup>
+                 {video.status === "failed" && (
+                            <ContextMenuItem
+                                onClick={() => handleRetry(video.id)}
+                                className="cursor-pointer"
+                            >
+                                <RefreshCcw className="mr-2 h-4 w-4" />
+                                Retry 
+                            </ContextMenuItem>
+                )}
                 <ContextMenuItem
                     variant="destructive"
                     onClick={() => setOpenDeleteDialog(true)}

@@ -154,7 +154,6 @@ export function useGenerateVideo() {
                 setStatus("generating_code");
                 toastIdRef.current = toast.loading("AI is writing your animation code...", {
                     description: "This takes 15-30 seconds",
-                    duration: Infinity,
                 });
 
                 const { generateManimCode } = await import("@/lib/ai/manim-agent");
@@ -187,7 +186,6 @@ export function useGenerateVideo() {
                 setStatus("generating_code");
                 toastIdRef.current = toast.loading("AI is writing your animation code...", {
                     description: "This takes 15-30 seconds",
-                    duration: Infinity,
                 });
 
                 const result = await videoapi.generateFromPrompt({

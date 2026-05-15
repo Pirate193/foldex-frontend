@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { isDesktopApp } from "@/lib/isdesktop";
 
 interface VideoPlayerProps {
   src: string;
@@ -152,21 +154,83 @@ export function VideoPlayer({
     }
   };
 
-  const handleDownload = async () => {
+ const handleDownload = async () => {
     try {
+      toast.loading("Downloading video...", { id: "dl-toast" });
+
+      let blob: Blob;
+
+      if (isDesktopApp()) {
+        // --------------------------------------------------------
+        // DESKTOP HACK: Use Tauri's Rust HTTP client to bypass CORS
+        // --------------------------------------------------------
+        const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+        
+        const response = await tauriFetch(src, {
+          method: 'GET',
+        });
+        
+        if (!response.ok) throw new Error("Desktop fetch failed");
+        
+        // Convert the raw data stream into a video file
+        const arrayBuffer = await response.arrayBuffer();
+        blob = new Blob([arrayBuffer], { type: 'video/mp4' });
+        
+      } else {
+        // --------------------------------------------------------
+        // WEB FALLBACK: Standard fetch
+        // --------------------------------------------------------
+        const response = await fetch(src);
+        if (!response.ok) throw new Error("Web fetch failed - likely CORS");
+        blob = await response.blob();
+      }
+
+      // 1. Create a local URL for the downloaded data
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // 2. Force the download
       const a = document.createElement("a");
-      a.href = src;
-      a.download = title ? `${title}.mp4` : "video.mp4";
-      a.target = "_blank";
+      a.href = blobUrl;
+      a.download = title ? `${title}.mp4` : "foldex-video.mp4";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      
+      // Clean up memory
+      window.URL.revokeObjectURL(blobUrl);
+      toast.success("Download complete!", { id: "dl-toast" });
+
+      // 3. Trigger OS Notification (Desktop Only)
+      if (isDesktopApp()) {
+        try {
+          const { isPermissionGranted, requestPermission, sendNotification } = await import('@tauri-apps/plugin-notification');
+          let permissionGranted = await isPermissionGranted();
+          
+          if (!permissionGranted) {
+            permissionGranted = (await requestPermission()) === 'granted';
+          }
+          
+          if (permissionGranted) {
+            sendNotification({ 
+                title: 'Foldex', 
+                body: `"${title || 'Video'}" has finished downloading.` 
+            });
+          }
+        } catch (err) {
+          console.error("Tauri notification failed:", err);
+        }
+      }
+      
     } catch (e) {
       console.error("Download failed", e);
+      toast.error("Download failed", { 
+        id: "dl-toast", 
+        description: "Opening in a new tab instead." 
+      });
+      // Fallback: Just open the link
       window.open(src, "_blank");
     }
   };
-
   // Keyboard controls (spacebar to play/pause)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

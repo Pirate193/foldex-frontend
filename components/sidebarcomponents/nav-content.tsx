@@ -19,6 +19,8 @@ import { useSession } from "@/hooks/use-auth"
 import { useDroppable } from "@dnd-kit/core"
 import { cn } from "@/lib/utils"
 import { VideoGenerationModal } from "../videos/videogenerationmodal"
+import { useTabStore } from "@/stores/tabstore"
+import { usePathname, useSearchParams } from "next/navigation"
 
 const RootDropZone = ({ children, className }: { children: React.ReactNode, className?: string }) => {
     const { setNodeRef, isOver } = useDroppable({
@@ -53,6 +55,11 @@ export const NavContent = () => {
     const [sortOption, setSortOption] = useState<SortOption>("A-Z");
     const [searchQuery, setSearchQuery] = useState("");
     const [videoModalOpen, setVideoModalOpen] = useState(false);
+    const {activeTabId,tabs}=useTabStore();
+    const activeTab = tabs.find(t => t.id === activeTabId);
+    const activeItemId = activeTab?.itemId || null;
+    const searchParams = useSearchParams();
+    
 
     const handleCreateNote = async () => {
         try {
@@ -150,7 +157,7 @@ export const NavContent = () => {
                                 className="cursor-pointer" 
                                 onClick={() => {
                                     if (!session && (!localStorage || !localStorage.getItem("pslmp_user_id"))) {
-                                        toast.info("You need to sign in to use this feature.");
+                                        toast.info("You need to sign in to use to generate a video.");
                                         return;
                                     }
                                     setVideoModalOpen(true);
@@ -189,9 +196,11 @@ export const NavContent = () => {
                                         </SidebarGroupLabel>
                                         <CollapsibleContent>
                                             <SidebarGroupContent>
-                                                {recentNotes.map((n) => (
-                                                    <NoteItem key={`recent-${n.id}`} noteId={n.id} title={n.title} folderId={n.folderId!} />
-                                                ))}
+                                                {recentNotes.map((n) => {
+                                                    const isactivenote = searchParams?.get("id");
+                                                return (
+                                                    <NoteItem key={`recent-${n.id}`} noteId={n.id} title={n.title} folderId={n.folderId!} isActive={n.id === isactivenote} />
+                                                )})}
                                             </SidebarGroupContent>
                                         </CollapsibleContent>
                                     </SidebarGroup>
@@ -220,9 +229,11 @@ export const NavContent = () => {
                                                         depth={0}
                                                     />
                                                 ))}
-                                                {pinnedNotes.map((n) => (
-                                                    <NoteItem key={`pinned-${n.id}`} noteId={n.id} title={n.title} folderId={n.folderId!} />
-                                                ))}
+                                                {pinnedNotes.map((n) =>{ 
+                                                const isactivenote = searchParams?.get("id");
+                                                return(
+                                                    <NoteItem key={`pinned-${n.id}`} noteId={n.id} title={n.title} folderId={n.folderId!} isActive={n.id === isactivenote}  />
+                                                )})}
                                             </SidebarGroupContent>
                                         </CollapsibleContent>
                                     </SidebarGroup>
@@ -272,6 +283,7 @@ export const NavContent = () => {
                                                     />
                                                 );
                                             } else if (item._type === "video") {
+                                                const activevideoId = searchParams?.get("id");
                                                 return (
                                                     <VideoItem
                                                         key={`video-${item.id}`}
@@ -279,10 +291,12 @@ export const NavContent = () => {
                                                         title={item._title}
                                                         folderId={(item as any).folderId}
                                                         status={(item as any).status}
+                                                        isActive={item.id === activevideoId}
                                                     />
                                                 );
                                             } else {
-                                                return <NoteItem key={item.id} noteId={item.id} title={item.title} folderId={item.folderId!} />;
+                                                const isactivenote = searchParams?.get("id");
+                                                return <NoteItem key={item.id} noteId={item.id} title={item.title} folderId={item.folderId!} isActive={item.id === isactivenote}  />;
                                             }
                                         })}
                                         {combinedRoots.length === 0 && !searchQuery.trim() && (

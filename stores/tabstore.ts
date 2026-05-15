@@ -157,6 +157,7 @@ export const useTabStore = create<TabStore>()(
       // corrupted localStorage data (SyntaxError on JSON.parse)
       storage: {
         getItem: (name: string) => {
+        if (typeof window === "undefined") return null;
           try {
             const raw = localStorage.getItem(name);
             if (!raw) return null;
@@ -176,6 +177,7 @@ export const useTabStore = create<TabStore>()(
           }
         },
         setItem: (name: string, value: unknown) => {
+        if (typeof window === "undefined") return null;
           try {
             localStorage.setItem(name, JSON.stringify(value));
           } catch (e) {
@@ -183,6 +185,7 @@ export const useTabStore = create<TabStore>()(
           }
         },
         removeItem: (name: string) => {
+        if (typeof window === "undefined") return null;
           localStorage.removeItem(name);
         },
       },

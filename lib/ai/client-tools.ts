@@ -13,7 +13,7 @@ import type { LanguageModel } from "ai";
 
 // Local services
 import { getusersnotes, getnote, createnote, updatenote } from "@/lib/services/localnotes";
-import { getusersfolders, createfolder, updatefolder } from "@/lib/services/localfolders";
+import { getusersfolders, createfolder, updatefolder, getcloudfolderId } from "@/lib/services/localfolders";
 import { getLocalDecryptedKey } from "@/lib/services/localapikeys";
 
 // Cloud mirror (fire-and-forget)
@@ -439,10 +439,16 @@ Instructions: Cite these sources using [1], [2], [3], etc. in your response.
           // Dynamic import to avoid bundling issues
           const { generateManimCode } = await import("./manim-agent");
           const { videoapi } = await import("@/lib/api");
+          const {isDesktopApp}= await  import("@/lib/isdesktop")
 
           // Generate Manim code locally using the user's model
           console.log("[ClientTools] Generating Manim code locally...");
           const manimResult = await generateManimCode({ prompt, model });
+          let cloudfolderId = folderId;
+          if(isDesktopApp()&& folderId){
+            const cloudId = await getcloudfolderId(folderId)
+            cloudfolderId=cloudId
+          }
 
           // Submit to backend for rendering
           const result = await videoapi.generate({
@@ -451,7 +457,7 @@ Instructions: Cite these sources using [1], [2], [3], etc. in your response.
             code: manimResult.code,
             description: manimResult.description,
             prompt,
-            folderId,
+            folderId:cloudfolderId,
           });
 
           console.log("[ClientTools] generateVideo: queued", result.videoId);

@@ -290,7 +290,7 @@ export function DndSidebarProvider({
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
               )}
               {activeItem.type === "video" && (
-                <Video className="h-4 w-4 shrink-0 text-purple-500" />
+                <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
               )}
               <span className="truncate">{activeItem.label}</span>
             </div>

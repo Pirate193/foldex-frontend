@@ -224,6 +224,13 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
     },
   });
   useEffect(() => {
+      console.log("activeChatId", chatId);
+      console.log("clearing old messages now ")
+      hasInitialized.current = false; // Allow the new chat to load
+      pendingMessageProcessedRef.current = false; 
+      setMessages([]); // Clear old messages immediately to avoid "ghosting"
+  }, [chatId, setMessages]);
+  useEffect(() => {
     if (
       initialMessages &&
       initialMessages.length > 0 &&

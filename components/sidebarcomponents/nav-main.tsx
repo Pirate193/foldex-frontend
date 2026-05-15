@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export function NavMain({
   items,
@@ -20,11 +21,15 @@ export function NavMain({
     isActive?: boolean;
   }[];
 }) {
+  const searchParams = useSearchParams();
+  const currentView = searchParams?.get("view") || "home";
   return (
       <SidebarMenu>
-        {items.map((item) => (
+        {items.map((item) => {
+        const isActive = item.url.includes(`view=${currentView}`);
+        return(
           <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild isActive={item.isActive} 
+            <SidebarMenuButton asChild isActive={isActive} 
             tooltip={{
                         children: item.title,
                         hidden: false,
@@ -37,7 +42,7 @@ export function NavMain({
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-        ))}
+        )})}
       </SidebarMenu>
   );
 }

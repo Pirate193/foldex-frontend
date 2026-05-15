@@ -29,7 +29,7 @@ import {
   usePromptInputAttachments,
   PromptInputProvider,
 } from "@/components/ai-elements/prompt-input";
-import { GlobeIcon } from "lucide-react";
+import { GlobeIcon, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
@@ -121,7 +121,7 @@ export default function NewChatComponent() {
   
 
   // Dynamic models from configured API keys
-  const { data: apiKeys } = useApiKeys();
+  const { data: apiKeys,isLoading:isapiloading } = useApiKeys();
   const configuredProviders = useMemo(
     () => (apiKeys ?? []).map(k => k.provider),
     [apiKeys]
@@ -270,14 +270,19 @@ export default function NewChatComponent() {
           <h1 className="text-3xl font-bold">{greeting}</h1>
         </div>
 
-        {availableModels.length === 0 && (
+        {!isapiloading &&availableModels.length === 0 && (
           <div className="text-center text-sm text-muted-foreground mb-4 p-3 rounded-lg bg-muted/50 border border-border/60">
             No AI models available. Go to{" "}
-            <a href="/settings" className="text-primary underline">Settings → API Keys</a>{" "}
+            <p className="text-primary underline">Settings → API Keys</p>{" "}
             to add a provider key.
           </div>
         )}
-
+        {isapiloading && (
+          <div className="text-center flex-row text-sm text-muted-foreground  p-4 justify-center items-center rounded-lg bg-muted/50 border border-border/60">
+            Loading your apikeys ...
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground"  />
+          </div>
+        )}
         {!isOnline && (
           <div className="text-center text-sm text-amber-600 dark:text-amber-400 mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
             You&apos;re offline. AI chat requires an internet connection. Notes &amp; folders still work.
@@ -361,18 +366,6 @@ export default function NewChatComponent() {
           </PromptInputFooter>
         </PromptInput>
         </PromptInputProvider>
-
-        <div className="flex flex-row justify-center mt-2 px-4">
-          <Suggestions>
-            {suggestions.map((suggestion) => (
-              <Suggestion
-                key={suggestion}
-                onClick={handleSuggestionClick}
-                suggestion={suggestion}
-              />
-            ))}
-          </Suggestions>
-        </div>
       </div>
     </div>
   );

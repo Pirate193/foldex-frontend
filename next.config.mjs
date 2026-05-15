@@ -4,11 +4,12 @@ const nextConfig = {
   // images: {
   //   unoptimized: true, // CRITICAL: Prevents Next.js from crashing on <Image /> tags
   // },
-  images: {
-    remotePatterns: [
+  images:{
+    // unoptimized:true,
+    remotePatterns:[
       {
-        protocol: 'https',
-        hostname: 'videos.foldex.space',
+        protocol:'https',
+        hostname:'videos.foldex.space',
       },
     ]
   }

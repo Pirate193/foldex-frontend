@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useDroppable, useDraggable } from "@dnd-kit/core";
 import { Folder as FolderType, NoteListItem, Video as VideoType } from "@/lib/api-types";
 import { 
@@ -42,6 +42,8 @@ import DeleteDialog from "../deletedialog";
 import UpdateTitle from "../notescomponent/update-title"; 
 import { FOLDER_COLORS, getFolderColor } from "@/lib/foldercolor";
 import UpdateFolderTitle from "../update-folder-title";
+import { useTabStore } from "@/stores/tabstore";
+import { useSearchParams } from "next/navigation";
 
 const COLORS = [
   { name: "Default", value: "default" },
@@ -73,6 +75,10 @@ export function FolderTreeItem({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
+  const {activeTabId,tabs}=useTabStore();
+  const activeTab = tabs.find(t => t.id === activeTabId);
+  const activeItemId = activeTab?.itemId || null;
+  const searchParams = useSearchParams();
 
   const { mutateAsync: deleteFolder } = useDeleteFolder();
   const { mutateAsync: updateFolder } = useUpdateFolder();
@@ -174,8 +180,10 @@ export function FolderTreeItem({
     }
   }
 
+  
   const folderColor = getFolderColor(folder.color);
   const hasChildren = childFolders.length > 0 || childNotes.length > 0 || childVideos.length > 0;
+  const isChildActive = searchParams?.get("folderId") === folder.id;
 
   return (
     <>
@@ -184,9 +192,12 @@ export function FolderTreeItem({
           <div
             ref={setRefs}
             className={cn(
-              "group/folder  flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/50",
+              "group/folder  flex cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-sm  transition-colors hover:bg-accent/50",
               isDragging && "opacity-40 cursor-grabbing",
               isOver && "bg-primary/20 hover:bg-primary/20 ring-1 ring-primary",
+              isChildActive 
+                            ? "bg-accent/50 text-foreground font-medium" 
+                            : "text-muted-foreground hover:bg-accent/50"
             )}
             style={{ paddingLeft: `${depth * 12 + 8}px` }}
             {...listeners}
@@ -245,7 +256,7 @@ export function FolderTreeItem({
             <ContextMenuItem 
               onClick={() => {
                 if (typeof window !== "undefined" && !localStorage.getItem("pslmp_user_id")) {
-                    toast.info("You need to sign in to use this feature.");
+                    toast.info("You need to sign in to use to generate a video.");
                     return;
                 }
                 setVideoModalOpen(true);
@@ -325,6 +336,7 @@ export function FolderTreeItem({
                 />
               );
             } else if (child._type === "video") {
+              const isactivevideo = searchParams?.get("id");
               return (
                 <div key={`video-${child.id}`} style={{ paddingLeft: `${(depth + 1) * 12}px` }}>
                   <VideoItem
@@ -332,13 +344,15 @@ export function FolderTreeItem({
                     title={child._title}
                     folderId={folder.id}
                     status={(child as any).status}
+                    isActive={child.id === isactivevideo}
                   />
                 </div>
               );
             } else {
+              const isactivenote = searchParams?.get("id");
               return (
                 <div key={`note-${child.id}`} style={{ paddingLeft: `${(depth + 1) * 12}px` }}>
-                  <NoteItem noteId={child.id} title={child.title} folderId={folder.id} />
+                  <NoteItem noteId={child.id} title={child.title} folderId={folder.id} isActive={child.id === isactivenote} />
                 </div>
               );
             }
