@@ -76,7 +76,12 @@ export const searchWebOutputSchema = successSchema.extend({
   })).optional()
 });
 
+export const addVideoOutputSchema = successSchema.extend({
+  videoId: z.string(),
+  message: z.string(),
+});
 
+export type AddVideoOutput = z.infer<typeof addVideoOutputSchema>;
 export type SearchWebOutput = z.infer<typeof searchWebOutputSchema>;
 
 export type GenerateCodeSnippetOutput = z.infer<typeof generateCodeSnippetOutputSchema>;

@@ -27,8 +27,10 @@ import { Button } from "../ui/button";
 import { useEffect, useMemo } from "react";
 import { Download } from "lucide-react";
 import { useCanvasStore } from "@/stores/canvasStore";
-import { createFolderOutputSchema, createNoteOutputSchema, generateCodeSnippetOutputSchema, generateMermaidDiagramOutputSchema, getFolderItemsOutputSchema, searchWebOutputSchema, updateFolderOutputSchema, updateNoteOutputSchema, youtubeVideoOutputSchema } from "@/lib/aitooltypes";
+import { addVideoOutputSchema, createFolderOutputSchema, createNoteOutputSchema, generateCodeSnippetOutputSchema, generateMermaidDiagramOutputSchema, getFolderItemsOutputSchema, searchWebOutputSchema, updateFolderOutputSchema, updateNoteOutputSchema, youtubeVideoOutputSchema } from "@/lib/aitooltypes";
 import { Spinner } from "../ui/spinner";
+import { VideoPlayer } from "../videos/videoplayer";
+import { useVideo } from "@/hooks/use-videos";
 
 const FLASHCARD_BASE_CLASSES =
   "group relative flex flex-col items-center justify-center text-center min-h-[200px] w-full max-w-sm p-6 my-4 rounded-3xl bg-card border border-border shadow-sm hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer select-none";
@@ -489,5 +491,189 @@ export function SourceGrid({ output }: { output: unknown }) {
       })}
     </div>
   );
+}
+
+export function GenerateVideo({ output }: { output: unknown }) {
+  const parsed = useMemo(
+    () => addVideoOutputSchema.safeParse(output),
+    [output],
+  );
+
+  if (!parsed.success || !parsed.data.success) return null;
+
+  const { data } = parsed;
+  const {data:video} = useVideo(data.videoId);
+  const { openAivideo } = useCanvasStore();
+
+  const isGenerating = video?.status === "generating";
+
+  // === GENERATING STATE ===
+  if (isGenerating) {
+    return (
+      <div className="my-4 w-full">
+        <div className="relative aspect-video w-full rounded-xl overflow-hidden bg-gradient-to-br from-muted via-muted/50 to-muted border border-border/50 shadow-lg">
+          {/* Animated gradient overlay */}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+            style={{ animation: "shimmer 2s infinite" }}
+          />
+
+          {/* Center content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
+            {/* Spinner */}
+            <div className="relative">
+              <div
+                className="w-16 h-16 rounded-full border-4 border-muted-foreground/20 border-t-primary"
+                style={{ animation: "spin 1s linear infinite" }}
+              />
+            </div>
+
+            {/* Status text */}
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold text-foreground">
+                Creating your video...
+              </p>
+              <p className="text-sm text-muted-foreground max-w-md">
+                This may take a few moments. Your video will appear here when
+                ready.
+              </p>
+            </div>
+
+            {/* Progress dots */}
+            <div className="flex gap-2 mt-2">
+              <span
+                className="w-2 h-2 bg-primary rounded-full"
+                style={{
+                  animation: "bounce 1s infinite",
+                  animationDelay: "-0.3s",
+                }}
+              />
+              <span
+                className="w-2 h-2 bg-primary rounded-full"
+                style={{
+                  animation: "bounce 1s infinite",
+                  animationDelay: "-0.15s",
+                }}
+              />
+              <span
+                className="w-2 h-2 bg-primary rounded-full"
+                style={{ animation: "bounce 1s infinite" }}
+              />
+            </div>
+          </div>
+
+          {/* Bottom progress bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted-foreground/20 overflow-hidden">
+            <div
+              className="h-full bg-primary/50"
+              style={{ animation: "progress 2s ease-in-out infinite" }}
+            />
+          </div>
+        </div>
+
+        {/* Inline animations for Tailwind v4 compatibility */}
+        <style jsx>{`
+          @keyframes shimmer {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+          @keyframes progress {
+            0% {
+              transform: translateX(-100%);
+            }
+            100% {
+              transform: translateX(100%);
+            }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // === FAILED STATE ===
+  if (video?.status === "failed") {
+    return (
+      <div className="my-4 w-full">
+        <div className="relative aspect-video w-full rounded-xl overflow-hidden border-2 border-destructive/50 bg-destructive/5 shadow-lg">
+          {/* Subtle pattern background */}
+          <div className="absolute inset-0 opacity-10">
+            <div
+              className="absolute inset-0 text-destructive"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(45deg, transparent, transparent 10px, currentColor 10px, currentColor 20px)",
+              }}
+            />
+          </div>
+
+          {/* Error content */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6">
+            {/* Error icon */}
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle className="w-10 h-10 text-destructive" />
+            </div>
+
+            {/* Error message */}
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold text-foreground">
+                Video Generation Failed
+              </p>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Something went wrong while creating your video. Please try
+                again.
+              </p>
+            </div>
+
+            {/* Failed badge */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive/10 text-destructive rounded-full text-sm font-medium">
+              <X className="w-4 h-4" />
+              Generation failed
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // === READY STATE ===
+  if (video?.status === "ready" && video.url) {
+    return (
+      <div className="my-4 w-full">
+        <div className="flex flex-col w-full bg-card p-2 rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <p className="text-lg font-semibold">{video.title}</p>
+            <Button
+              variant="outline"
+              onClick={() =>
+                openAivideo({
+                  src: video.url as string,
+                  title: video.title as string,
+                  poster: video.thumbnail as string,
+                  description: video.description as string,
+                })
+              }
+            >
+              <Sidebar />
+            </Button>
+          </div>
+          <p className="text-sm truncate text-muted-foreground">
+            {video.description}
+          </p>
+        </div>
+        <VideoPlayer
+          src={video.url}
+          title={video.title}
+          poster={video.thumbnail}
+          className="w-full shadow-md border"
+        />
+      </div>
+    );
+  }
+
+  return null;
 }
 

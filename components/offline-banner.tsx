@@ -26,10 +26,10 @@ export function OfflineBanner() {
             toast.success("You're back online!", { duration: 3000 });
 
             // If on desktop and logged in, trigger a background sync
-            if (isDesktopApp() && localStorage.getItem("pslmp_user_id")) {
+            if (isDesktopApp() && localStorage.getItem("foldex_user_id")) {
                 // Dynamic import to avoid circular deps
                 import("@/lib/services/sync").then(({ syncLocalToCloud }) => {
-                    const userId = localStorage.getItem("pslmp_user_id")!;
+                    const userId = localStorage.getItem("foldex_user_id")!;
                     // We don't have the full user object, but sync will
                     // read from localUser table anyway
                     import("@/lib/localdb").then(async ({ getLocalDb }) => {

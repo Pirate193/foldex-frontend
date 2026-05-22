@@ -40,6 +40,7 @@ import { MathInline } from "./Mathblock";
 import { ScrollArea } from "../ui/scroll-area";
 
 import { BlockNoteContent } from "@/lib/api-types";
+import { Videoblock } from "./aivideoblock";
 
 interface BlocknoteEditorProps {
   initialContent?: BlockNoteContent;
@@ -58,6 +59,7 @@ const customSchema = BlockNoteSchema.create({
     mermaid: mermaidBlock(),
     flashcard: flashcardblock(),
     latex: latexBlock(),
+    aivideo: Videoblock(),
   },
   inlineContentSpecs: {
     ...defaultInlineContentSpecs,
@@ -140,6 +142,21 @@ const insertMermaidItem = (
   subtext: "Insert a Mermaid diagram block",
 });
 
+const insertAiVideoItem = (
+  editor: BlockNoteEditor<typeof customSchema.blockSchema>,
+): DefaultReactSuggestionItem => ({
+  title: "Generate Video",
+  onItemClick: () => {
+    insertOrUpdateBlockForSlashMenu(editor, {
+      type: "aivideo",
+    });
+  },
+  aliases: ["ai", "video", "embed", "aiVideo"],
+  group: "AI Tools",
+  icon: <Video size={18} />,
+  subtext: "Generate a video using AI",
+});
+
 const getCustomSlashMenuItems = (
   editor: BlockNoteEditor<typeof customSchema.blockSchema>,
 ): DefaultReactSuggestionItem[] => {
@@ -148,6 +165,7 @@ const getCustomSlashMenuItems = (
   );
 
   return [
+    insertAiVideoItem(editor),
     insertQuizItem(editor),
     insertFlashcardItem(editor),
     ...filteredDefaultItems,

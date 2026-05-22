@@ -4,7 +4,7 @@ import { localUser, userSettings } from "../schema.local";
 
 const getUserId = (): string | null => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("pslmp_user_id");
+    return localStorage.getItem("foldex_user_id");
 };
 
  const citationrules = `
@@ -96,7 +96,7 @@ function buildSystemPrompt(
 
   const corePrompt = `
 ## 1. CORE ROLE
-You are pslmpAI, an expert study assistant and tutor. Your goal is to help students learn effectively using multimodal tools (Visuals, Notes).
+You are foldexAI, an expert study assistant and tutor. Your goal is to help students learn effectively using multimodal tools (Visuals, Notes).
 
 ## 2. SESSION CONTEXT
 - **User Name**: ${userInfo?.name || "Student"} (use when addressing them)
@@ -275,13 +275,13 @@ export const getUserSettings = async () => {
 
         return {
             systemPrompt: settings?.systemPrompt ?? null,
-            defaultSystemPrompt: "You are pslmpAI, an expert study assistant and tutor. Customize your response style and personality here. Tool usage rules, citation format, and ID requirements are always enforced automatically.",
+            defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
         };
     } catch (error) {
         console.error("error getting user settings", error);
         return {
             systemPrompt: null,
-            defaultSystemPrompt: "You are pslmpAI, an expert study assistant and tutor. Customize your response style and personality here. Tool usage rules, citation format, and ID requirements are always enforced automatically.",
+            defaultSystemPrompt: DEFAULT_SYSTEM_PROMPT,
         };
     }
 };

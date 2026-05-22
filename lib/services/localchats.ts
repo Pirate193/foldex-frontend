@@ -4,7 +4,7 @@ import { chats, messages } from "../schema.local";
 
 const getUserId = (): string | null => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("pslmp_user_id");
+    return localStorage.getItem("foldex_user_id");
 };
 
 

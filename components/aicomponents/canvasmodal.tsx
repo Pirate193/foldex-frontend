@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { useCanvasStore } from "@/stores/canvasStore";
 import { CodePlayground } from "./codeplayground";
 import { MermaidDiagram } from "./mermaid";
-import {  VideoPanel } from "./canvas";
+import {  AiVideoPanel, VideoPanel } from "./canvas";
 import NotesPanel from "./notespanel";
 
 const CanvasModal = () => {
@@ -19,7 +19,7 @@ const CanvasModal = () => {
 
           {activeView === "ytvideo" && <VideoPanel />}  
           {activeView === "code" && <CodePlayground />}
-
+          {activeView === "aivideo" && <AiVideoPanel />}
           {activeView === "mermaid" && <MermaidDiagram />}
 
           {activeView === "idle" && (

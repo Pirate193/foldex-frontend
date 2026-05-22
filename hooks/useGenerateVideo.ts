@@ -178,7 +178,7 @@ export function useGenerateVideo() {
                     code: manimResult.code,
                     folderId: args.folderId,
                     description: manimResult.description,
-                    prompt: args.prompt,
+                    prompt: args.prompt + args.fileContext,
                 });
                 return result;
             } else {

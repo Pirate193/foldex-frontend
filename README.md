@@ -1,4 +1,4 @@
-# PSLMP — Frontend
+# FOLDEX — Frontend
 
 > Personalized Self-Learning Management Platform — web and desktop client.
 
@@ -6,13 +6,13 @@
 ![Tauri](https://img.shields.io/badge/Tauri-2-blue?logo=tauri)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![CI](https://github.com/YOUR_USERNAME/pslmp-frontend/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/Pirate193/foldex-frontend/actions/workflows/ci.yml/badge.svg)
 
-PSLMP is an open-source, offline-first note-taking platform for students. Write notes with a rich block editor, embed flashcards and quizzes directly inside your notes, chat with AI using your own API key, work offline on the desktop app with automatic sync when you reconnect and manim video generation.
+Foldex is an open-source, offline-first note-taking platform for students. Write notes with a rich block editor, embed flashcards and quizzes directly inside your notes, chat with AI using your own API key, work offline on the desktop app with automatic sync when you reconnect and manim video generation.
 
-**Live app → [pslmp.foldex.space](https://pslmp.foldex.space)**  
-**Backend repo → [pslmp-backend](https://github.com/Pirate193/pslmp-backend)**
-**ManimRenderer repo ->[pslmp-manim-renderer](https://github.com/Pirate193/pslmp-manim-renderer.git)**
+**Live app → [foldex.space](https://foldex.space)**  
+**Backend repo → [foldex-backend](https://github.com/Pirate193/foldex-backend)**
+**ManimRenderer repo ->[foldex-manim-renderer](https://github.com/Pirate193/foldex-manim-renderer.git)**
 
 ---
 
@@ -62,14 +62,14 @@ PSLMP is an open-source, offline-first note-taking platform for students. Write 
 - [Bun](https://bun.sh) >= 1.0
 - [Node.js](https://nodejs.org) >= 20
 - [Rust](https://rustup.rs) — only required if building the desktop app
-- A running instance of [pslmp-backend](https://github.com/Pirate193/pslmp-backend)
+- A running instance of [foldex-backend](https://github.com/Pirate193/foldex-backend)
 - **Optional:** A running instance of the Manim Flask Renderer (required for AI video generation)[]()
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/Pirate193/pslmp-frontend.git
-cd pslmp-frontend
+git clone https://github.com/Pirate193/foldex-frontend.git
+cd foldex-frontend
 bun install
 ```
 

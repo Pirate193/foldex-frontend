@@ -53,7 +53,7 @@ import { useAiStore } from "@/stores/aistore";
 import { useAddMessage, useChatMessages } from "@/hooks/use-chat";
 import { SidebarTrigger } from "../ui/sidebar";
 import { ChatHistoryPopover } from "./chathistorypopover";
-import { CreateFolder, CreateNote, GenerateCodeSnippet, GenerateMermaidDiagram, GetFolderItems, LoadingCodeSnippet, LoadingFolder, LoadingMermaidDiagram, LoadingNote, SourceGrid, UpdateFolder, UpdateNote, YouTubeEmbed } from "./toolui";
+import { CreateFolder, CreateNote, GenerateCodeSnippet, GenerateMermaidDiagram, GenerateVideo, GetFolderItems, LoadingCodeSnippet, LoadingFolder, LoadingMermaidDiagram, LoadingNote, SourceGrid, UpdateFolder, UpdateNote, YouTubeEmbed } from "./toolui";
 import { Tool, ToolContent, ToolHeader } from "../ai-elements/tool";
 import { Spinner } from "../ui/spinner";
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -548,6 +548,15 @@ const AiChatComponent = ({chatId}:{chatId:string}) => {
                             )}
                             {part.state === "output-available" && (
                               <UpdateFolder output={part.output} />
+                            )}
+                          </div>
+                        );
+                      
+                      case "tool-generateVideo":
+                        return (
+                          <div key={`${message.id}-${i}`}>
+                            {part.state === "output-available" && (
+                              <GenerateVideo output={part.output} />
                             )}
                           </div>
                         );

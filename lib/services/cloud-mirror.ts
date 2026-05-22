@@ -25,7 +25,7 @@ import { folderapi, notesapi, chatapi, templateapi } from "../api";
 function shouldMirror(): boolean {
     if (typeof window === "undefined") return false;
     if (!navigator.onLine) return false;  // Skip if offline
-    return !!localStorage.getItem("pslmp_user_id");
+    return !!localStorage.getItem("foldex_user_id");
 }
 
 /** Get cloudId for a local item */

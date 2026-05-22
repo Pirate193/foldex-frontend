@@ -37,10 +37,8 @@ export default function SignInPage() {
         <div className="flex justify-center gap-2 md:justify-start">
           <Link href="/" className="flex items-center gap-2 font-medium">
             <div className="flex size-6 items-center justify-center rounded-md ">
-              {/* <Image src="/icon.png" alt="folder" width="32" height="32" /> */}
-              <FileText />
+              <Image src="/icon.png" alt="folder" width="32" height="32" />
             </div>
-            PSLMP
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -53,7 +51,7 @@ export default function SignInPage() {
       {/* Right — Animated Welcome Panel */}
       {/* 4. Added overflow-y-auto so this side can scroll in Firefox/Zen if it gets too tall */}
       <div className="relative hidden bg-muted/30 border-l lg:flex flex-col justify-center p-10 overflow-y-auto">
-        {/*<motion.div
+        <motion.div
           className="relative z-10 max-w-lg mx-auto space-y-5 "
           variants={containerVariants}
           initial="hidden"
@@ -118,7 +116,7 @@ export default function SignInPage() {
             </div>
           </motion.div>
         </motion.div>
-        */}
+       
       </div>
     </div>
   );

@@ -9,10 +9,10 @@ export const getLocalDb = async () => {
   // If we already connected, reuse the connection
   if (localDbInstance) return localDbInstance;
 
-  // 1. Tell Tauri to create or open a file named 'pslmp.db' on the hard drive
+  // 1. Tell Tauri to create or open a file named 'foldex.db' on the hard drive
   const dbName = process.env.NODE_ENV === "development" 
-    ? "sqlite:pslmp_dev.db" 
-    : "sqlite:pslmp_local.db";
+    ? "sqlite:foldex_dev.db" 
+    : "sqlite:foldex_local.db";
   const tauriDb = await Database.load(dbName);
 
   // 2. Create the proxy so Drizzle can talk to Tauri

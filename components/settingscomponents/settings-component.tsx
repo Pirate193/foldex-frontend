@@ -102,7 +102,7 @@ function AccountSection() {
             <User className="h-8 w-8 text-muted-foreground" />
           </div>
           <div className="text-center space-y-1">
-            <h4 className="text-sm font-medium">You&apos;re using pslmp as a guest</h4>
+            <h4 className="text-sm font-medium">You&apos;re using foldex as a guest</h4>
             <p className="text-xs text-muted-foreground max-w-sm">
               Your data is stored locally on this device. Sign in to enable cloud sync and access your notes from anywhere.
             </p>
@@ -521,7 +521,7 @@ function SystemPromptSection() {
               variant="outline"
               size="sm"
               onClick={() => {
-                setPrompt(currentPrompt || defaultPrompt);
+                setPrompt(currentPrompt);
                 setIsEditing(true);
               }}
               className="cursor-pointer"

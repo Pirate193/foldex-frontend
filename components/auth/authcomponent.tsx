@@ -39,7 +39,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
   // Helper: Save user info locally after successful auth (for desktop)
   async function saveUserLocally(user: { id: string; name: string; email: string; image?: string | null }) {
     // Always persist userId to localStorage so getUserId() works everywhere
-    localStorage.setItem("pslmp_user_id", user.id);
+    localStorage.setItem("foldex_user_id", user.id);
   }
 
   // Step 1 — Send OTP to email
@@ -142,7 +142,7 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
           </>
         ) : (
           <>
-            <h1 className="text-2xl font-bold">Welcome to Pslmp</h1>
+            <h1 className="text-2xl font-bold">Welcome to Foldex</h1>
             <p className="text-sm text-balance text-muted-foreground">
               Sign in or create an account to continue
             </p>

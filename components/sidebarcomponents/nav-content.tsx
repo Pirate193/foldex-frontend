@@ -156,7 +156,7 @@ export const NavContent = () => {
                             <DropdownMenuItem 
                                 className="cursor-pointer" 
                                 onClick={() => {
-                                    if (!session && (!localStorage || !localStorage.getItem("pslmp_user_id"))) {
+                                    if (!session && (!localStorage || !localStorage.getItem("foldex_user_id"))) {
                                         toast.info("You need to sign in to use to generate a video.");
                                         return;
                                     }

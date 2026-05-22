@@ -231,7 +231,7 @@ const WatchVideoPage = ({ videoId }: { videoId: string }) => {
                       size="sm"
                       className={`rounded-full cursor-pointer px-4 gap-2 ${userVote === 'like' ? 'bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary' : ''}`}
                       onClick={() => {
-                        if (typeof window !== "undefined" && !localStorage.getItem("pslmp_user_id")) {
+                        if (typeof window !== "undefined" && !localStorage.getItem("foldex_user_id")) {
                             toast.info("You need to sign in to use this feature.");
                             return;
                         }
@@ -247,7 +247,7 @@ const WatchVideoPage = ({ videoId }: { videoId: string }) => {
                       size="sm"
                       className={`rounded-full cursor-pointer px-4 gap-2 ${userVote === 'dislike' ? 'bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive' : ''}`}
                       onClick={() => {
-                        if (typeof window !== "undefined" && !localStorage.getItem("pslmp_user_id")) {
+                        if (typeof window !== "undefined" && !localStorage.getItem("foldex_user_id")) {
                             toast.info("You need to sign in to use this feature.");
                             return;
                         }

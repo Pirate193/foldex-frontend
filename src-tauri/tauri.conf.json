@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "pslmp",
+  "productName": "foldex",
   "version": "0.1.0",
-  "identifier": "com.foldex.pslmp",
+  "identifier": "com.foldex.space",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3001",
@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "pslmp",
+        "title": "foldex",
         "url": "/app?view=home",
-        "userAgent": "pslmp Tauri Desktop",
+        "userAgent": "foldex Tauri Desktop",
         "width": 800,
         "height": 600,
         "resizable": true,

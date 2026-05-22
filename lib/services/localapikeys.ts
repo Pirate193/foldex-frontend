@@ -4,10 +4,10 @@ import { apiKeyMeta } from "../schema.local";
 import { Stronghold } from '@tauri-apps/plugin-stronghold';
 
 const VAULT_PATH = process.env.NODE_ENV === "development" 
-    ? 'pslmp-vault-dev.bin' 
-    : 'pslmp-vault_local.bin';
-const VAULT_PASS = 'pslmp-vault-local-password'; // local default vault password
-const CLIENT_NAME = 'pslmp_client_local';
+    ? 'foldex-vault-dev.bin' 
+    : 'foldex-vault_local.bin';
+const VAULT_PASS = 'foldex-vault-local-password'; // local default vault password
+const CLIENT_NAME = 'foldex_client_local';
 
 async function getStore() {
     const stronghold = await Stronghold.load(VAULT_PATH, VAULT_PASS);

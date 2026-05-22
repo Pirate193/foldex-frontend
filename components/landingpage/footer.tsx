@@ -1,157 +1,134 @@
-import { FileText } from 'lucide-react'
-import Link from 'next/link'
+import { Folder } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 const links = [
-    {
-        title: 'Features',
-        href: '/',
-    },
-    {
-        title: 'About',
-        href: '/about',
-    },
-    {
-        title: 'Pricing',
-        href: '/pricing',
-    },
-    {
-        title: 'GitHub',
-        href: 'https://github.com',
-    },
-]
+  {
+    title: "Mission",
+    href: "/mission",
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
+  },
+  {
+    title: "About",
+    href: "/about",
+  },
+];
 
 export default function FooterSection() {
-    return (
-        <footer className="py-16 md:py-32">
-            <div className="mx-auto max-w-5xl px-6">
-                <Link
-                    href="/"
-                    aria-label="go home"
-                    className="mx-auto block size-fit">
-                    <FileText />
-                </Link>
+  return (
+    <footer className="py-16 md:py-32">
+      <div className="mx-auto max-w-5xl px-6">
+        <Link href="/" aria-label="go home" className="mx-auto block size-fit">
+          <Image src="/icon.png" alt="folder" width="32" height="32" />
+        </Link>
 
-                <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
-                    {links.map((link, index) => (
-                        <Link
-                            key={index}
-                            href={link.href}
-                            className="text-muted-foreground hover:text-primary block duration-150">
-                            <span>{link.title}</span>
-                        </Link>
-                    ))}
-                </div>
-                <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="X/Twitter"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="currentColor"
-                                d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"></path>
-                        </svg>
-                    </Link>
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="LinkedIn"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="currentColor"
-                                d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93zM6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37z"></path>
-                        </svg>
-                    </Link>
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Facebook"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="currentColor"
-                                d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"></path>
-                        </svg>
-                    </Link>
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Threads"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="1.5"
-                                d="M19.25 8.505c-1.577-5.867-7-5.5-7-5.5s-7.5-.5-7.5 8.995s7.5 8.996 7.5 8.996s4.458.296 6.5-3.918c.667-1.858.5-5.573-6-5.573c0 0-3 0-3 2.5c0 .976 1 2 2.5 2s3.171-1.027 3.5-3c1-6-4.5-6.5-6-4"
-                                color="currentColor"></path>
-                        </svg>
-                    </Link>
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Instagram"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="currentColor"
-                                d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3"></path>
-                        </svg>
-                    </Link>
-                    <Link
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="TikTok"
-                        className="text-muted-foreground hover:text-primary block">
-                        <svg
-                            className="size-6"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="1em"
-                            height="1em"
-                            viewBox="0 0 24 24">
-                            <path
-                                fill="currentColor"
-                                d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"></path>
-                        </svg>
-                    </Link>
-                </div>
-                <span className="text-muted-foreground block text-center text-sm"> © {2026} psLMP Open Source Project</span>
-            </div>
-        </footer>
-    )
+        <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
+          {links.map((link, index) => (
+            <Link
+              key={index}
+              href={link.href}
+              className="text-muted-foreground hover:text-primary block duration-150"
+            >
+              <span>{link.title}</span>
+            </Link>
+          ))}
+        </div>
+        <div className="my-8 flex flex-wrap justify-center gap-6 text-sm">
+          <Link
+            href="https://x.com/foldex"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="X/Twitter"
+            className="text-muted-foreground hover:text-primary block "
+          >
+            <svg
+              className="size-6"
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"
+              ></path>
+            </svg>
+          </Link>
+          <Link
+            href="https://discord.gg/bMHfCXz6bv"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Discord"
+            className="text-muted-foreground hover:text-primary block"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              fill="currentColor"
+              className="bi bi-discord size-6"
+              viewBox="0 0 16 16"
+            >
+              <path d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612" />
+            </svg>
+          </Link>
+          <Link
+            href="https://www.youtube.com/@foldexapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Youtube"
+            className="text-muted-foreground hover:text-primary block"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              fill="currentColor"
+              className="bi bi-youtube size-6"
+              viewBox="0 0 16 16"
+            >
+              <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A100 100 0 0 1 7.858 2zM6.4 5.209v4.818l4.157-2.408z" />
+            </svg>
+          </Link>
+          <Link
+            href="https://www.tiktok.com/@foldexapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+            className="text-muted-foreground hover:text-primary block"
+          >
+            <svg
+              className="size-6"
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"
+              ></path>
+            </svg>
+          </Link>
+          <Link
+           href="https://github.com/Pirate193/foldex-frontend"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="TikTok"
+            className="text-muted-foreground hover:text-primary block">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" className="bi bi-github" viewBox="0 0 16 16">
+  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+</svg>
+          </Link>
+        </div>
+        <span className="text-muted-foreground block text-center text-sm">
+          {" "}
+          © {new Date().getFullYear()} Foldex, All rights reserved
+        </span>
+      </div>
+    </footer>
+  );
 }

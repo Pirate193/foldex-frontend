@@ -17,7 +17,7 @@ export function proxy(request: NextRequest) {
   const isAuthRoute = pathname.startsWith("/sign-in") || pathname.startsWith("/sign-up");
   const isPublicRoute = pathname === "/" || pathname === "/pricing" || pathname === "/about" || pathname.startsWith("/api");
 
-  // THE FIX: Check for BOTH the production (Secure) and development cookies
+  //Check for BOTH the production (Secure) and development cookies
   const sessionToken =
     request.cookies.get("__Secure-better-auth.session_token")?.value ||
     request.cookies.get("better-auth.session_token")?.value;

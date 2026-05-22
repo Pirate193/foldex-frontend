@@ -444,7 +444,7 @@ export function HomeComponent() {
                             if (
                               !session &&
                               (!localStorage ||
-                                !localStorage.getItem("pslmp_user_id"))
+                                !localStorage.getItem("foldex_user_id"))
                             ) {
                               toast.info(
                                 "You need to sign in to generate a video."

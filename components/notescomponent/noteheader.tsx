@@ -131,7 +131,7 @@ const Notesheader = ({ noteId, folderId }: Props) => {
           
           // 3. Native Windows/Mac push notification!
           sendNotification({
-            title: 'psLMP',
+            title: 'foldex',
             body: `Note successfully exported to ${filePath}`
           });
           toast.success("Saved to your computer");
@@ -181,7 +181,7 @@ const Notesheader = ({ noteId, folderId }: Props) => {
           
           // 3. Fire the native notification
           sendNotification({
-            title: 'psLMP',
+            title: 'foldex',
             body: `PDF successfully exported to ${filePath}`
           });
           toast.success("Saved to your computer");

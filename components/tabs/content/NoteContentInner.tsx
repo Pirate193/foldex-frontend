@@ -12,6 +12,7 @@ import { BlockNoteContent } from '@/lib/api-types';
 import { useAiStore } from '@/stores/aistore';
 import AiModalComponent from '@/components/aicomponents/aimodal';
 import CanvasModal from '@/components/aicomponents/canvasmodal';
+import { useNoteStore } from '@/stores/notestore';
 
 
 
@@ -28,9 +29,15 @@ const NoteContentInner = ({ noteId, folderId }: NoteContentInnerProps) => {
   const [panelWidth, setPanelWidth] = useState(420);
   const isDragging = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const {setFolderId}=useNoteStore();
 
   const [content, setContent] = useState<BlockNoteContent|undefined>(undefined);
   const [isSaving, setIsSaving] = useState(false);
+  useEffect(() => {
+      if (note?.folderId) {
+        setFolderId(note.folderId);
+      }
+  }, [note]);
 
   useEffect(() => {
     if (note?.title) {

@@ -255,7 +255,7 @@ export function FolderTreeItem({
             </ContextMenuItem>
             <ContextMenuItem 
               onClick={() => {
-                if (typeof window !== "undefined" && !localStorage.getItem("pslmp_user_id")) {
+                if (typeof window !== "undefined" && !localStorage.getItem("foldex_user_id")) {
                     toast.info("You need to sign in to use to generate a video.");
                     return;
                 }

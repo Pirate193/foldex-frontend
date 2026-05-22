@@ -53,7 +53,7 @@ const AI_CHAT_URL = `${process.env.NODE_ENV === "production" ? "https://api.pslm
 
 const PromptInputAttachmentsDisplay = ({ 
   parseStates, 
-  onRemoveParsed // <-- Add this prop
+  onRemoveParsed 
 }: { 
   parseStates: Map<string, ParsedAttachment>,
   onRemoveParsed: (id: string) => void 
@@ -82,7 +82,6 @@ const PromptInputAttachmentsDisplay = ({
 };
 
 const BackgroundParserWatcher = ({ parse }: { parse: any }) => {
-  // Now this hook is safely INSIDE the provider!
   const attachments = usePromptInputAttachments();
   const prevIdsRef = useRef<Set<string>>(new Set());
 
@@ -132,10 +131,10 @@ export default function NewChatComponent() {
   );
   const hasTavilyKey = configuredProviders.includes("tavily");
   const [model, setModel] = useState<string>("");
-  // 1. Add the greeting state
+  
   const [greeting, setGreeting] = useState<string>("How can I help you today?");
 
-  // 2. Add the time-based logic
+  
   useEffect(() => {
     const hour = new Date().getHours();
     const userName = user?.user.name || "User" ; 
@@ -270,7 +269,7 @@ export default function NewChatComponent() {
           <h1 className="text-3xl font-bold">{greeting}</h1>
         </div>
 
-        {!isapiloading &&availableModels.length === 0 && (
+        {!isapiloading &&availableModels.length === 0 && !isapiloading && (
           <div className="text-center text-sm text-muted-foreground mb-4 p-3 rounded-lg bg-muted/50 border border-border/60">
             No AI models available. Go to{" "}
             <p className="text-primary underline">Settings → API Keys</p>{" "}
