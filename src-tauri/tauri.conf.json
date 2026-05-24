@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "com.foldex.space",
   "build": {
-    "frontendDist": "../out",
-    "devUrl": "http://localhost:3001",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
     "beforeDevCommand": "bun dev",
     "beforeBuildCommand": "bun run build"
   },
@@ -13,10 +13,10 @@
     "windows": [
       {
         "title": "foldex",
-        "url": "/app?view=home",
+        "url": "/",
         "userAgent": "foldex Tauri Desktop",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 800,
         "resizable": true,
         "fullscreen": false
       }

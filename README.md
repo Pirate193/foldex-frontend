@@ -2,7 +2,7 @@
 
 > Personalized Self-Learning Management Platform — web and desktop client.
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/React-vite-black?logo=react)
 ![Tauri](https://img.shields.io/badge/Tauri-2-blue?logo=tauri)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -21,7 +21,7 @@ Foldex is an open-source, offline-first note-taking platform for students. Write
 
 | Home | Editor | AI Chat |
 |---|---|---|
-| ![home](docs/home.png) | ![editor](docs/editor.png) | ![ai](docs/ai.png) |
+| ![home](src/docs/home.png) | ![editor](src/docs/editor.png) | ![ai](src/docs/ai.png) |
 
 ---
 
@@ -32,7 +32,7 @@ Foldex is an open-source, offline-first note-taking platform for students. Write
 - **Multi-tab** — Open multiple notes simultaneously, VS Code style
 - **AI assistant** — Chat panel that can create and update notes via tool calls. Bring your own API key (OpenAI, Anthropic, Google, DeepSeek, xAI, Moonshot)
 - **File attachments** — Attach PDFs, DOCX, PPTX, and images. Text is extracted client-side so every AI model can read them regardless of vision support
-- **Offline-first desktop** — Full read/write when disconnected. Changes sync automatically on reconnect via a local SQLite write queue
+- **Offline-first desktop** — Full read/write when disconnected.
 - **Video generation**- generate manim explanatory video with prompt to break down any concept
 - **Folders** — Nested folder tree with drag-and-drop, colour coding, and pinning
 - **OTP auth** — Passwordless sign-in via email one-time code. No passwords stored
@@ -43,11 +43,12 @@ Foldex is an open-source, offline-first note-taking platform for students. Write
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
+| Framework | React Vite |
 | UI | shadcn/ui + Tailwind CSS |
 | Editor | BlockNote |
 | Desktop shell | Tauri 2 |
 | Server state | TanStack Query |
+|Router manager|Tanstack Router |
 | Client state | Zustand |
 | Auth client | Better Auth |
 | AI streaming | Vercel AI SDK |
@@ -87,9 +88,6 @@ NEXT_PUBLIC_API_URL=http://localhost:3000
 ### 3. Run
 
 ```bash
-# Web (http://localhost:3001)
-bun dev
-
 # Desktop (requires Rust)
 bunx tauri dev
 ```
@@ -97,10 +95,7 @@ bunx tauri dev
 ### Building for production
 
 ```bash
-# Web
-bun run build
-
-# Desktop installer (.exe on Windows, .dmg on macOS) make sure to uncomment the output export and image unoptimized  in next config when building 
+# Desktop installer (.exe on Windows, .dmg on macOS) 
 bunx tauri build
 ```
 
@@ -110,7 +105,7 @@ bunx tauri build
 
 ```
 src/
-  app/                  # Next.js App Router pages and layouts
+  routes/               # Tanstack router routes
   components/
     ai-elements/        # Chat UI primitives (message, conversation, reasoning)
     homecomponents/     # all components shown in Home foldercard,videocard,notecard
@@ -120,13 +115,12 @@ src/
     landingpage/        # Marketing site components
     sidebarcomponents/  # all the side bar components 
     videos/             # video components ,player,card ,item ,generationmodal,watchlist,watchpage
-    views/              # all the view components rendered in app (note-view,video-view,...)
   hooks/                # TanStack Query hooks (use-notes, use-folders, ...)
   lib/
-    ai/                 # All of the ai files to make the ai work client side only for desktop
+    ai/                 # All of the ai files to make the ai work client side 
     services/           # All the local sqllite configuration (localfolders.ts,sync.ts,...)
     api.ts              # Axios API client with typed request functions
-    api-types.ts        # Shared TypeScript types matching backend responses
+    api-types.ts        # Shared TypeScript types 
     auth-client.ts      # better auth configurations
     providers.ts        # AI provider + model registry (IDs, prefixes, models)
     localdb.ts          #local sqllite db configuration

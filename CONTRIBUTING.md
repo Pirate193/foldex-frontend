@@ -216,7 +216,7 @@ Feature requests that clearly explain the problem are much more likely to be pic
 
 ### Next.js
 
-- All client components must have `"use client"` at the top
+- All client components must have ` ` at the top
 - Keep components focused — if a component is doing too much, split it
 - Use TanStack Query for all server state — no `useEffect` + `fetch` patterns
 - Use Zustand only for local UI state that does not need to be cached or synced
