@@ -14,6 +14,8 @@ import { useTheme } from "next-themes";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Kbd } from "../ui/kbd";
 import { useNavigate } from "@tanstack/react-router";
+import { getLocalDb } from "@/lib/localdb";
+import { localUser } from "@/lib/schema.local";
 
 // ─── Account Section ───
 function AccountSection() {
@@ -64,6 +66,10 @@ function AccountSection() {
       await authClient.updateUser({
         name: name.trim()
       });
+      const db = await getLocalDb();
+      await db.update(localUser).set({
+       name:name.trim()
+      })
       toast.success("Profile updated");
     } catch (error) {
       toast.error("Failed to update profile");

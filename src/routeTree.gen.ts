@@ -11,89 +11,101 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as VideoVideoIdRouteImport } from './routes/video/$videoId'
-import { Route as NoteNoteIdRouteImport } from './routes/note/$noteId'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppVideoVideoIdRouteImport } from './routes/_app/video/$videoId'
+import { Route as AppNoteNoteIdRouteImport } from './routes/_app/note/$noteId'
 
 const SigninLazyRouteImport = createFileRoute('/signin')()
-const WatchIndexLazyRouteImport = createFileRoute('/watch/')()
-const ChatIndexLazyRouteImport = createFileRoute('/chat/')()
-const WatchWatchIdLazyRouteImport = createFileRoute('/watch/$watchId')()
-const ChatChatIdLazyRouteImport = createFileRoute('/chat/$chatId')()
+const AppWatchIndexLazyRouteImport = createFileRoute('/_app/watch/')()
+const AppChatIndexLazyRouteImport = createFileRoute('/_app/chat/')()
+const AppWatchWatchIdLazyRouteImport = createFileRoute('/_app/watch/$watchId')()
+const AppChatChatIdLazyRouteImport = createFileRoute('/_app/chat/$chatId')()
 
 const SigninLazyRoute = SigninLazyRouteImport.update({
   id: '/signin',
   path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/signin.lazy').then((d) => d.Route))
-const IndexRoute = IndexRouteImport.update({
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const WatchIndexLazyRoute = WatchIndexLazyRouteImport.update({
+const AppWatchIndexLazyRoute = AppWatchIndexLazyRouteImport.update({
   id: '/watch/',
   path: '/watch/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/watch/index.lazy').then((d) => d.Route))
-const ChatIndexLazyRoute = ChatIndexLazyRouteImport.update({
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/watch/index.lazy').then((d) => d.Route),
+)
+const AppChatIndexLazyRoute = AppChatIndexLazyRouteImport.update({
   id: '/chat/',
   path: '/chat/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/chat/index.lazy').then((d) => d.Route))
-const WatchWatchIdLazyRoute = WatchWatchIdLazyRouteImport.update({
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/chat/index.lazy').then((d) => d.Route),
+)
+const AppWatchWatchIdLazyRoute = AppWatchWatchIdLazyRouteImport.update({
   id: '/watch/$watchId',
   path: '/watch/$watchId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any).lazy(() =>
-  import('./routes/watch/$watchId.lazy').then((d) => d.Route),
+  import('./routes/_app/watch/$watchId.lazy').then((d) => d.Route),
 )
-const ChatChatIdLazyRoute = ChatChatIdLazyRouteImport.update({
+const AppChatChatIdLazyRoute = AppChatChatIdLazyRouteImport.update({
   id: '/chat/$chatId',
   path: '/chat/$chatId',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/chat/$chatId.lazy').then((d) => d.Route))
-const VideoVideoIdRoute = VideoVideoIdRouteImport.update({
+  getParentRoute: () => AppRoute,
+} as any).lazy(() =>
+  import('./routes/_app/chat/$chatId.lazy').then((d) => d.Route),
+)
+const AppVideoVideoIdRoute = AppVideoVideoIdRouteImport.update({
   id: '/video/$videoId',
   path: '/video/$videoId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
-const NoteNoteIdRoute = NoteNoteIdRouteImport.update({
+const AppNoteNoteIdRoute = AppNoteNoteIdRouteImport.update({
   id: '/note/$noteId',
   path: '/note/$noteId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
   '/signin': typeof SigninLazyRoute
-  '/note/$noteId': typeof NoteNoteIdRoute
-  '/video/$videoId': typeof VideoVideoIdRoute
-  '/chat/$chatId': typeof ChatChatIdLazyRoute
-  '/watch/$watchId': typeof WatchWatchIdLazyRoute
-  '/chat/': typeof ChatIndexLazyRoute
-  '/watch/': typeof WatchIndexLazyRoute
+  '/note/$noteId': typeof AppNoteNoteIdRoute
+  '/video/$videoId': typeof AppVideoVideoIdRoute
+  '/chat/$chatId': typeof AppChatChatIdLazyRoute
+  '/watch/$watchId': typeof AppWatchWatchIdLazyRoute
+  '/chat/': typeof AppChatIndexLazyRoute
+  '/watch/': typeof AppWatchIndexLazyRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/signin': typeof SigninLazyRoute
-  '/note/$noteId': typeof NoteNoteIdRoute
-  '/video/$videoId': typeof VideoVideoIdRoute
-  '/chat/$chatId': typeof ChatChatIdLazyRoute
-  '/watch/$watchId': typeof WatchWatchIdLazyRoute
-  '/chat': typeof ChatIndexLazyRoute
-  '/watch': typeof WatchIndexLazyRoute
+  '/': typeof AppIndexRoute
+  '/note/$noteId': typeof AppNoteNoteIdRoute
+  '/video/$videoId': typeof AppVideoVideoIdRoute
+  '/chat/$chatId': typeof AppChatChatIdLazyRoute
+  '/watch/$watchId': typeof AppWatchWatchIdLazyRoute
+  '/chat': typeof AppChatIndexLazyRoute
+  '/watch': typeof AppWatchIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
   '/signin': typeof SigninLazyRoute
-  '/note/$noteId': typeof NoteNoteIdRoute
-  '/video/$videoId': typeof VideoVideoIdRoute
-  '/chat/$chatId': typeof ChatChatIdLazyRoute
-  '/watch/$watchId': typeof WatchWatchIdLazyRoute
-  '/chat/': typeof ChatIndexLazyRoute
-  '/watch/': typeof WatchIndexLazyRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/note/$noteId': typeof AppNoteNoteIdRoute
+  '/_app/video/$videoId': typeof AppVideoVideoIdRoute
+  '/_app/chat/$chatId': typeof AppChatChatIdLazyRoute
+  '/_app/watch/$watchId': typeof AppWatchWatchIdLazyRoute
+  '/_app/chat/': typeof AppChatIndexLazyRoute
+  '/_app/watch/': typeof AppWatchIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,8 +120,8 @@ export interface FileRouteTypes {
     | '/watch/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/signin'
+    | '/'
     | '/note/$noteId'
     | '/video/$videoId'
     | '/chat/$chatId'
@@ -118,25 +130,20 @@ export interface FileRouteTypes {
     | '/watch'
   id:
     | '__root__'
-    | '/'
+    | '/_app'
     | '/signin'
-    | '/note/$noteId'
-    | '/video/$videoId'
-    | '/chat/$chatId'
-    | '/watch/$watchId'
-    | '/chat/'
-    | '/watch/'
+    | '/_app/'
+    | '/_app/note/$noteId'
+    | '/_app/video/$videoId'
+    | '/_app/chat/$chatId'
+    | '/_app/watch/$watchId'
+    | '/_app/chat/'
+    | '/_app/watch/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   SigninLazyRoute: typeof SigninLazyRoute
-  NoteNoteIdRoute: typeof NoteNoteIdRoute
-  VideoVideoIdRoute: typeof VideoVideoIdRoute
-  ChatChatIdLazyRoute: typeof ChatChatIdLazyRoute
-  WatchWatchIdLazyRoute: typeof WatchWatchIdLazyRoute
-  ChatIndexLazyRoute: typeof ChatIndexLazyRoute
-  WatchIndexLazyRoute: typeof WatchIndexLazyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,67 +155,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SigninLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/watch/': {
-      id: '/watch/'
+    '/_app/watch/': {
+      id: '/_app/watch/'
       path: '/watch'
       fullPath: '/watch/'
-      preLoaderRoute: typeof WatchIndexLazyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppWatchIndexLazyRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/chat/': {
-      id: '/chat/'
+    '/_app/chat/': {
+      id: '/_app/chat/'
       path: '/chat'
       fullPath: '/chat/'
-      preLoaderRoute: typeof ChatIndexLazyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppChatIndexLazyRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/watch/$watchId': {
-      id: '/watch/$watchId'
+    '/_app/watch/$watchId': {
+      id: '/_app/watch/$watchId'
       path: '/watch/$watchId'
       fullPath: '/watch/$watchId'
-      preLoaderRoute: typeof WatchWatchIdLazyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppWatchWatchIdLazyRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/chat/$chatId': {
-      id: '/chat/$chatId'
+    '/_app/chat/$chatId': {
+      id: '/_app/chat/$chatId'
       path: '/chat/$chatId'
       fullPath: '/chat/$chatId'
-      preLoaderRoute: typeof ChatChatIdLazyRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppChatChatIdLazyRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/video/$videoId': {
-      id: '/video/$videoId'
+    '/_app/video/$videoId': {
+      id: '/_app/video/$videoId'
       path: '/video/$videoId'
       fullPath: '/video/$videoId'
-      preLoaderRoute: typeof VideoVideoIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppVideoVideoIdRouteImport
+      parentRoute: typeof AppRoute
     }
-    '/note/$noteId': {
-      id: '/note/$noteId'
+    '/_app/note/$noteId': {
+      id: '/_app/note/$noteId'
       path: '/note/$noteId'
       fullPath: '/note/$noteId'
-      preLoaderRoute: typeof NoteNoteIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppNoteNoteIdRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
+interface AppRouteChildren {
+  AppIndexRoute: typeof AppIndexRoute
+  AppNoteNoteIdRoute: typeof AppNoteNoteIdRoute
+  AppVideoVideoIdRoute: typeof AppVideoVideoIdRoute
+  AppChatChatIdLazyRoute: typeof AppChatChatIdLazyRoute
+  AppWatchWatchIdLazyRoute: typeof AppWatchWatchIdLazyRoute
+  AppChatIndexLazyRoute: typeof AppChatIndexLazyRoute
+  AppWatchIndexLazyRoute: typeof AppWatchIndexLazyRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppIndexRoute: AppIndexRoute,
+  AppNoteNoteIdRoute: AppNoteNoteIdRoute,
+  AppVideoVideoIdRoute: AppVideoVideoIdRoute,
+  AppChatChatIdLazyRoute: AppChatChatIdLazyRoute,
+  AppWatchWatchIdLazyRoute: AppWatchWatchIdLazyRoute,
+  AppChatIndexLazyRoute: AppChatIndexLazyRoute,
+  AppWatchIndexLazyRoute: AppWatchIndexLazyRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   SigninLazyRoute: SigninLazyRoute,
-  NoteNoteIdRoute: NoteNoteIdRoute,
-  VideoVideoIdRoute: VideoVideoIdRoute,
-  ChatChatIdLazyRoute: ChatChatIdLazyRoute,
-  WatchWatchIdLazyRoute: WatchWatchIdLazyRoute,
-  ChatIndexLazyRoute: ChatIndexLazyRoute,
-  WatchIndexLazyRoute: WatchIndexLazyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

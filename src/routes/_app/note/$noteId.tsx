@@ -5,7 +5,7 @@ type NoteSearchParams = {
   folderId?: string;
 }
 
-export const Route = createFileRoute('/note/$noteId')({
+export const Route = createFileRoute('/_app/note/$noteId')({
   component: NotePage,
   validateSearch: (search: Record<string, unknown>): NoteSearchParams => {
     return {

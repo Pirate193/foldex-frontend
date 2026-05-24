@@ -48,6 +48,7 @@ import { VideoGenerationModal } from "../videos/videogenerationmodal"
 import { useSession } from "@/hooks/use-auth"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Alert01FreeIcons, Delete02FreeIcons, GridViewFreeIcons, Home03FreeIcons, LeftToRightListBulletFreeIcons, Search01FreeIcons, SlidersHorizontalFreeIcons } from "@hugeicons/core-free-icons"
+import { AlertTriangle, Grid2X2, Home, List, Search, SlidersHorizontal, Trash } from "lucide-react"
 
 type SortOption = "A-Z" | "Z-A" | "Newest" | "Oldest"
 type ViewFilter = "all" | "notes" | "videos"
@@ -291,14 +292,14 @@ export function HomeComponent() {
             {/* Header */}
             <div className="mb-4 flex items-center gap-2">
               <SidebarTrigger className="cursor-pointer" />
-              <HugeiconsIcon icon={Home03FreeIcons} className="h-4 w-4 " />
+              <Home  className="h-4 w-4  " />
               <p className="font-medium text-foreground">Home</p>
             </div>
 
             {/* Search Bar */}
             <div className="mb-4 flex items-center rounded-full border border-border/60 bg-muted/50 p-2">
               <div className="flex flex-1 items-center px-4">
-                <HugeiconsIcon icon={Search01FreeIcons} className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
                   value={searchQuery}
@@ -316,7 +317,7 @@ export function HomeComponent() {
                     view === "grid" && "bg-accent text-accent-foreground"
                   )}
                 >
-                  <HugeiconsIcon icon={GridViewFreeIcons} className="h-4 w-4" />
+                  <Grid2X2 className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -327,7 +328,7 @@ export function HomeComponent() {
                     view === "list" && "bg-accent text-accent-foreground"
                   )}
                 >
-                  <HugeiconsIcon icon={LeftToRightListBulletFreeIcons} className="h-4 w-4" />
+                  <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -359,7 +360,7 @@ export function HomeComponent() {
                     className="cursor-pointer gap-1.5 text-muted-foreground"
                   >
                     {sortOption}
-                    <HugeiconsIcon icon={SlidersHorizontalFreeIcons} className="h-3.5 w-3.5" />
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -392,7 +393,7 @@ export function HomeComponent() {
                   <Empty>
                     <EmptyHeader>
                       <EmptyMedia variant="icon">
-                        <HugeiconsIcon icon={Search01FreeIcons} />
+                        <Search />
                       </EmptyMedia>
                       <EmptyTitle>No Results</EmptyTitle>
                       <EmptyDescription>
@@ -514,7 +515,7 @@ export function HomeComponent() {
                   onClick={() => setShowDeleteConfirm(true)}
                   className="h-7 cursor-pointer gap-1.5 px-2 text-red-400 hover:bg-red-500/10 hover:text-red-300"
                 >
-                  <HugeiconsIcon icon={Delete02FreeIcons} className="h-3.5 w-3.5" />
+                  <Trash className="h-3.5 w-3.5" />
                   Delete
                 </Button>
               </div>
@@ -529,7 +530,7 @@ export function HomeComponent() {
             <AlertDialogContent className="sm:max-w-[425px]">
               <AlertDialogHeader>
                 <AlertDialogTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Alert01FreeIcons} className="h-5 w-5 text-destructive" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   Delete {totalSelected} item{totalSelected > 1 ? "s" : ""}?
                 </AlertDialogTitle>
                 <AlertDialogDescription>

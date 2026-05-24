@@ -41,10 +41,10 @@ type LocalUserInfo = {
   image: string | null;
 }
 
-export async function markLocalUserLoggedOut() {
+async function markLocalUserLoggedOut() {
     try {
         const db = await getLocalDb();
-        await db.update(localUser).set({ isLoggedIn: false });
+        await db.delete(localUser);
         localStorage.removeItem("foldex_user_id");
     } catch (e) {
         console.error("Failed to mark user as logged out:", e);

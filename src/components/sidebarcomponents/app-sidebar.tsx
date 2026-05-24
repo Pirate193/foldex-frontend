@@ -68,9 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <FileText className="size-4" />
-                  </div>
+                  <img src="/icon310x310.png" alt="folder" width="32" height="32" />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>

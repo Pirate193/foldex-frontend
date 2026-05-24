@@ -4,7 +4,7 @@ import { createFileRoute } from '@tanstack/react-router'
 type VideoSearchParams = {
   folderId?: string;
 }
-export const Route = createFileRoute('/video/$videoId')({
+export const Route = createFileRoute('/_app/video/$videoId')({
   component: VideoPage,
   validateSearch: (search: Record<string, unknown>): VideoSearchParams => {
     return {

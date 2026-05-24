@@ -357,9 +357,7 @@ Instructions: Cite these sources using [1], [2], [3], etc. in your response.
       execute: async ({ query }) => {
         console.log("[ClientTools] YouTube search:", query);
 
-        // Use the same Google Search API key approach as the backend
-        // The key is provided by the app developer, set via env var at build time
-        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_SEARCH_API_KEY;
+        const apiKey = import.meta.env.VITE_GOOGLE_SEARCH_API_KEY;
         if (!apiKey) {
           return { success: false, error: "YouTube search is not configured." };
         }

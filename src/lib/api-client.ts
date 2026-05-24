@@ -1,9 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-    baseURL: process.env.NODE_ENV === "development" 
-    ? "http://localhost:3000" 
-    : "https://api.pslmp.foldex.space",
+    baseURL: import.meta.env.VITE_API_URL?? "http://localhost:3000",
     withCredentials:true,
     headers:{
         "Content-Type":"application/json"

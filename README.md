@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![CI](https://github.com/Pirate193/foldex-frontend/actions/workflows/ci.yml/badge.svg)
 
-Foldex is an open-source, offline-first note-taking platform for students. Write notes with a rich block editor, embed flashcards and quizzes directly inside your notes, chat with AI using your own API key, work offline on the desktop app with automatic sync when you reconnect and manim video generation.
+Foldex is an open-source, offline-first note-taking platform for students. Write notes with a rich block editor, embed flashcards and quizzes directly inside your notes, chat with AI using your own API key, work offline on the desktop app and manim video generation.
 
 **Live app → [foldex.space](https://foldex.space)**  
 **Backend repo → [foldex-backend](https://github.com/Pirate193/foldex-backend)**

@@ -3,9 +3,7 @@ import { emailOTPClient } from "better-auth/client/plugins";
 
 
 export const authClient = createAuthClient({
-    baseURL: process.env.NODE_ENV === "development" 
-    ? "http://localhost:3000" 
-    : "https://api.pslmp.foldex.space",
+    baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:3000",
     plugins:[
         emailOTPClient()
     ]

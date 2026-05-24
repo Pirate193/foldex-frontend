@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/input-otp";
 import { authClient } from "@/lib/auth-client";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { getLocalDb } from "@/lib/localdb";
+import { localUser } from "@/lib/schema.local";
 
 
 type Step = "email" | "otp";
@@ -34,6 +36,14 @@ export function AuthForm({ className, ...props }: React.ComponentProps<"div">) {
   async function saveUserLocally(user: { id: string; name: string; email: string; image?: string | null }) {
     // Always persist userId to localStorage so getUserId() works everywhere
     localStorage.setItem("foldex_user_id", user.id);
+    const db = await getLocalDb();
+    await  db.insert(localUser).values({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image ?? null,
+                isLoggedIn: true,
+    });
   }
 
   // Step 1 — Send OTP to email

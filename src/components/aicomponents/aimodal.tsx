@@ -68,7 +68,7 @@ import { type ParsedAttachment, useFileParser } from "@/hooks/use-file-parser";
 
 const PromptInputAttachmentsDisplay = ({ 
   parseStates, 
-  onRemoveParsed // <-- Add this prop
+  onRemoveParsed 
 }: { 
   parseStates: Map<string, ParsedAttachment>,
   onRemoveParsed: (id: string) => void 
@@ -360,7 +360,7 @@ const AiModalComponent = () => {
           <ConversationContent>
             {messages.length === 0 && (
              <ConversationEmptyState
-                icon={<FileText className="size-12 text-primary" />}
+                icon={<img src="/icon310x310.png" alt="folder" width="48" height="48" />}
                 title="Start a new Chat"
                 description="Ask Questions,Summarize,and create something new"
               />

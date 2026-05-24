@@ -1,5 +1,3 @@
- ;
-
 import { useState, useEffect, useCallback } from "react";
 
 export function useOnlineStatus() {
@@ -17,7 +15,7 @@ export function useOnlineStatus() {
         }
 
         try {
-            // THE FIX: Fetch a tiny 16px image from Google.
+            // Fetch a tiny 16px image from Google.
             // "mode: 'no-cors'" tells the browser to skip security checks since we 
             // don't care about the image data, we just care if the request survives!
             await fetch(`https://www.google.com/favicon.ico?t=${new Date().getTime()}`, {

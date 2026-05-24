@@ -32,6 +32,7 @@ import { useGenerateVideo } from "@/hooks/useGenerateVideo";
 import { extractTextFromFilePart } from "@/lib/ai/file-parser";
 import { PROVIDERS, getAvailableModels } from "@/lib/providers";
 import { useApiKeys } from "@/hooks/use-settings";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 
 interface VideoGenerationModalProps {
     open: boolean;
@@ -58,6 +59,7 @@ export function VideoGenerationModal({ open, onOpenChange, folderId }: VideoGene
     const [isExtracting, setIsExtracting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const isOnline = useOnlineStatus();
 
     const { generateVideo, isGenerating } = useGenerateVideo();
     const {data:apiKeys =[],isLoading:isapikeyloading}=useApiKeys();
@@ -136,6 +138,10 @@ export function VideoGenerationModal({ open, onOpenChange, folderId }: VideoGene
         }
         if (!selectedModel) {
             toast.error("Please select a model");
+            return;
+        }
+        if(!isOnline){
+            toast.info("Your are offline,video generation requires and internet connection ")
             return;
         }
 

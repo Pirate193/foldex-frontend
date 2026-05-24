@@ -1,7 +1,7 @@
 import ChatClient from '@/components/aicomponents/chat-client'
 import { createLazyFileRoute } from '@tanstack/react-router'
 
-export const Route = createLazyFileRoute('/chat/$chatId')({
+export const Route = createLazyFileRoute('/_app/chat/$chatId')({
   component: ChatPage,
 })
 
